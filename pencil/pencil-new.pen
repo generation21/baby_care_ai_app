@@ -5442,6 +5442,967 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "xUfpv",
+      "x": 1300,
+      "y": 0,
+      "name": "Dashboard Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "$background",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "y9Y2l",
+          "type": "ref",
+          "ref": "6OGbl",
+          "name": "appBar",
+          "descendants": {
+            "g7eG1": {
+              "gap": 0
+            },
+            "FPu27": {
+              "enabled": false
+            },
+            "kHtp6": {
+              "content": "Baby Care"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "F5QyX",
+          "name": "Scroll Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            16,
+            24,
+            16
+          ],
+          "children": [
+            {
+              "id": "eNV97",
+              "type": "ref",
+              "ref": "tu7Yc",
+              "width": "fill_container",
+              "name": "babyProfile"
+            },
+            {
+              "type": "frame",
+              "id": "7kqiE",
+              "name": "todaySection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "USKug",
+                  "name": "todayTitle",
+                  "fill": "$text_primary",
+                  "content": "Today's Summary",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "Thuqq",
+                  "name": "statsRow",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "AbuVA",
+                      "type": "ref",
+                      "ref": "zmK30",
+                      "width": "fill_container",
+                      "name": "stat1",
+                      "descendants": {
+                        "HOStU": {
+                          "iconFontName": "water_drop"
+                        },
+                        "REPV0": {
+                          "content": "Feedings"
+                        },
+                        "PDyjo": {
+                          "content": "6"
+                        },
+                        "T2ADf": {
+                          "content": "Today"
+                        }
+                      }
+                    },
+                    {
+                      "id": "7gi0E",
+                      "type": "ref",
+                      "ref": "zmK30",
+                      "width": "fill_container",
+                      "name": "stat2",
+                      "descendants": {
+                        "HOStU": {
+                          "iconFontName": "baby_changing_station"
+                        },
+                        "REPV0": {
+                          "content": "Diapers"
+                        },
+                        "PDyjo": {
+                          "content": "4"
+                        },
+                        "T2ADf": {
+                          "content": "Today"
+                        }
+                      }
+                    },
+                    {
+                      "id": "CuYF1",
+                      "type": "ref",
+                      "ref": "RLSi2",
+                      "width": "fill_container",
+                      "name": "stat3",
+                      "descendants": {
+                        "QMtSN": {
+                          "iconFontName": "bedtime"
+                        },
+                        "n5Rtk": {
+                          "content": "Sleep"
+                        },
+                        "EnB2S": {
+                          "content": "4h 30m"
+                        },
+                        "Kni0m": {
+                          "content": "Total today"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Z8OMv",
+              "name": "timerSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mG0ZS",
+                  "name": "timerTitle",
+                  "fill": "$text_primary",
+                  "content": "Active Timer",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "id": "qHtwJ",
+                  "type": "ref",
+                  "ref": "8AHqV",
+                  "width": "fill_container",
+                  "name": "activeTimer"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DT9nH",
+              "name": "qaSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mG9fy",
+                  "name": "qaTitle",
+                  "fill": "$text_primary",
+                  "content": "Quick Actions",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "7JHuv",
+                  "name": "qaGrid",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "id": "VAmsx",
+                      "type": "ref",
+                      "ref": "51Pus",
+                      "name": "qa1",
+                      "descendants": {
+                        "D7sVD": {
+                          "iconFontName": "water_drop"
+                        },
+                        "HNe8t": {
+                          "content": "Breast"
+                        }
+                      }
+                    },
+                    {
+                      "id": "cDmsT",
+                      "type": "ref",
+                      "ref": "51Pus",
+                      "fill": "#7E57C2",
+                      "name": "qa2",
+                      "descendants": {
+                        "D7sVD": {
+                          "iconFontName": "restaurant"
+                        },
+                        "HNe8t": {
+                          "content": "Formula"
+                        }
+                      }
+                    },
+                    {
+                      "id": "KfghQ",
+                      "type": "ref",
+                      "ref": "51Pus",
+                      "fill": "$accent",
+                      "name": "qa3",
+                      "descendants": {
+                        "D7sVD": {
+                          "iconFontName": "baby_changing_station"
+                        },
+                        "HNe8t": {
+                          "content": "Diaper"
+                        }
+                      }
+                    },
+                    {
+                      "id": "4Ajml",
+                      "type": "ref",
+                      "ref": "51Pus",
+                      "fill": "$success",
+                      "name": "qa4",
+                      "descendants": {
+                        "D7sVD": {
+                          "iconFontName": "bedtime"
+                        },
+                        "HNe8t": {
+                          "content": "Sleep"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "10aUr",
+              "name": "historySection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "o5fL7",
+                  "name": "historyTitle",
+                  "fill": "$text_primary",
+                  "content": "Recent History",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "srOKr",
+                  "name": "historyList",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "D3NIH",
+                      "type": "ref",
+                      "ref": "fBAqD",
+                      "width": "fill_container",
+                      "name": "rec1"
+                    },
+                    {
+                      "id": "faqpk",
+                      "type": "ref",
+                      "ref": "d6zZ0",
+                      "width": "fill_container",
+                      "name": "rec2"
+                    },
+                    {
+                      "id": "JArsa",
+                      "type": "ref",
+                      "ref": "fBAqD",
+                      "width": "fill_container",
+                      "name": "rec3",
+                      "descendants": {
+                        "2bKcB": {
+                          "fill": "#F3E5F5"
+                        },
+                        "1jNrj": {
+                          "iconFontName": "restaurant",
+                          "fill": "#7E57C2"
+                        },
+                        "2F3VT": {
+                          "content": "Formula feeding"
+                        },
+                        "MdqlR": {
+                          "content": "150ml · 20 min"
+                        },
+                        "cQd6j": {
+                          "content": "10:15"
+                        },
+                        "KCGGN": {
+                          "content": "2h ago"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "xpg4A",
+          "type": "ref",
+          "ref": "4iBYU",
+          "name": "bottomNav"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "7Kbbz",
+      "x": 1700,
+      "y": 0,
+      "name": "Add Feeding Record Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "$background",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "i9b82",
+          "type": "ref",
+          "ref": "6OGbl",
+          "name": "appBar2",
+          "descendants": {
+            "kHtp6": {
+              "content": "Add Feeding Record"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "6lQM0",
+          "name": "Form Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "v0ROM",
+              "name": "typeField",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YLW0i",
+                  "name": "typeLabel",
+                  "fill": "$text_primary",
+                  "content": "Feeding Type",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "SxnYK",
+                  "type": "ref",
+                  "ref": "MyvS0",
+                  "width": "fill_container",
+                  "name": "typeControl",
+                  "descendants": {
+                    "ycZt3": {
+                      "content": "Breast"
+                    },
+                    "XekBm": {
+                      "content": "Formula"
+                    },
+                    "cJBPx": {
+                      "content": "Mixed"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fbpUl",
+              "name": "sideField",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "opk2d",
+                  "name": "sideLabel",
+                  "fill": "$text_primary",
+                  "content": "Side",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "HhMPU",
+                  "name": "sideChips",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "5Suac",
+                      "type": "ref",
+                      "ref": "rXhHH",
+                      "name": "chip1",
+                      "descendants": {
+                        "PxPCs": {
+                          "iconFontName": "arrow_back",
+                          "rotation": 180
+                        },
+                        "8QkpR": {
+                          "content": "Left"
+                        }
+                      }
+                    },
+                    {
+                      "id": "25Gvt",
+                      "type": "ref",
+                      "ref": "lapMa",
+                      "name": "chip2",
+                      "descendants": {
+                        "b7yX1": {
+                          "iconFontName": "arrow_forward"
+                        },
+                        "O5TZY": {
+                          "content": "Right"
+                        }
+                      }
+                    },
+                    {
+                      "id": "DCB4K",
+                      "type": "ref",
+                      "ref": "lapMa",
+                      "name": "chip3",
+                      "descendants": {
+                        "b7yX1": {
+                          "iconFontName": "sync_alt"
+                        },
+                        "O5TZY": {
+                          "content": "Both"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "wLltw",
+              "type": "ref",
+              "ref": "ipaEE",
+              "width": "fill_container",
+              "name": "amountField",
+              "descendants": {
+                "QhQ9M": {
+                  "content": "Amount (ml)"
+                },
+                "f5XUC": {
+                  "content": "120"
+                },
+                "EfIfY": {
+                  "content": "Optional for breast feeding"
+                }
+              }
+            },
+            {
+              "id": "p67st",
+              "type": "ref",
+              "ref": "ipaEE",
+              "width": "fill_container",
+              "name": "durationField",
+              "descendants": {
+                "QhQ9M": {
+                  "content": "Duration (minutes)"
+                },
+                "f5XUC": {
+                  "content": "15"
+                },
+                "EfIfY": {
+                  "content": "Optional"
+                }
+              }
+            },
+            {
+              "id": "eFsJs",
+              "type": "ref",
+              "ref": "ipaEE",
+              "width": "fill_container",
+              "name": "timeField",
+              "descendants": {
+                "QhQ9M": {
+                  "content": "Recorded Time"
+                },
+                "f5XUC": {
+                  "content": "2026-02-08 14:30"
+                },
+                "EfIfY": {
+                  "content": "Default: current time"
+                }
+              }
+            },
+            {
+              "id": "6FTHS",
+              "type": "ref",
+              "ref": "ipaEE",
+              "width": "fill_container",
+              "name": "notesField",
+              "descendants": {
+                "QhQ9M": {
+                  "content": "Notes (optional)"
+                },
+                "vjKi6": {
+                  "height": 96
+                },
+                "f5XUC": {
+                  "content": "Add notes here..."
+                },
+                "EfIfY": {
+                  "content": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "p7TOT",
+          "name": "Bottom Actions",
+          "width": "fill_container",
+          "height": 80,
+          "fill": "$surface",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "$border_light"
+          },
+          "gap": 12,
+          "padding": 16,
+          "children": [
+            {
+              "id": "kUjTF",
+              "type": "ref",
+              "ref": "CnhFs",
+              "width": "fill_container",
+              "name": "cancelBtn",
+              "descendants": {
+                "AeQEX": {
+                  "content": "Cancel"
+                }
+              }
+            },
+            {
+              "id": "1DUDy",
+              "type": "ref",
+              "ref": "Pjyc1",
+              "width": "fill_container",
+              "name": "saveBtn",
+              "descendants": {
+                "Q0gJh": {
+                  "iconFontName": "check"
+                },
+                "Cbq6K": {
+                  "content": "Save Record"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "wD0GM",
+      "x": 2100,
+      "y": 0,
+      "name": "AI Chat Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "$background",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "mFhyB",
+          "type": "ref",
+          "ref": "6OGbl",
+          "name": "appBar3",
+          "descendants": {
+            "kHtp6": {
+              "content": "AI Chat"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "36SUT",
+          "name": "contextBanner",
+          "width": "fill_container",
+          "fill": "#E1F5FE",
+          "cornerRadius": 8,
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "left": 4
+            },
+            "fill": "$info"
+          },
+          "gap": 8,
+          "padding": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "J3av7",
+              "name": "cbIcon",
+              "width": 20,
+              "height": 20,
+              "iconFontName": "info",
+              "iconFontFamily": "Material Symbols Rounded",
+              "fill": "$info"
+            },
+            {
+              "type": "text",
+              "id": "OzGSE",
+              "name": "cbText",
+              "fill": "$info",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "AI has access to your baby's records from the past 7 days",
+              "lineHeight": 1.4,
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Jhgot",
+          "name": "Chat Messages",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "id": "zkIIr",
+              "type": "ref",
+              "ref": "086oM",
+              "width": "fill_container",
+              "name": "aiMsg1"
+            },
+            {
+              "id": "LBvzA",
+              "type": "ref",
+              "ref": "mR28q",
+              "width": "fill_container",
+              "name": "userMsg1"
+            },
+            {
+              "id": "Z5Efa",
+              "type": "ref",
+              "ref": "086oM",
+              "width": "fill_container",
+              "name": "aiMsg2",
+              "descendants": {
+                "g4Dwu": {
+                  "content": "Typically, solid foods can be introduced around 6 months of age. Look for signs of readiness like sitting up well, showing interest in food, and losing the tongue-thrust reflex. Start with single-ingredient purees."
+                }
+              }
+            },
+            {
+              "id": "W7Nxl",
+              "type": "ref",
+              "ref": "mR28q",
+              "width": "fill_container",
+              "name": "userMsg2",
+              "descendants": {
+                "1bqVf": {
+                  "content": "How many times should I feed per day?"
+                }
+              }
+            },
+            {
+              "id": "3K5MH",
+              "type": "ref",
+              "ref": "086oM",
+              "width": "fill_container",
+              "name": "aiMsg3",
+              "descendants": {
+                "g4Dwu": {
+                  "content": "Based on your records, your baby is feeding 6 times today, which is normal. At this age, babies typically need 5-8 feedings per day."
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "hX6u9",
+          "name": "Chat Input",
+          "width": "fill_container",
+          "height": 80,
+          "fill": "$surface",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "$border_light"
+          },
+          "gap": 8,
+          "padding": [
+            12,
+            16
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "QZbPS",
+              "type": "ref",
+              "ref": "ipaEE",
+              "width": "fill_container",
+              "name": "inputField",
+              "descendants": {
+                "QhQ9M": {
+                  "enabled": false
+                },
+                "vjKi6": {
+                  "width": "fill_container"
+                },
+                "f5XUC": {
+                  "content": "Ask about your baby..."
+                },
+                "EfIfY": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "mdDo6",
+              "type": "ref",
+              "ref": "ufLtf",
+              "fill": "$primary",
+              "name": "sendBtn",
+              "descendants": {
+                "3mCzS": {
+                  "iconFontName": "send",
+                  "fill": "#FFFFFF"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "h5h80",
+      "x": 2500,
+      "y": 0,
+      "name": "Splash Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "$primary",
+      "layout": "vertical",
+      "gap": 32,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "7GWQI",
+          "name": "logoContainer",
+          "layout": "vertical",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "WLyWH",
+              "name": "iconCircle",
+              "width": 120,
+              "height": 120,
+              "fill": "#FFFFFF",
+              "cornerRadius": 60,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 8
+                },
+                "blur": 24
+              },
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "ncrAk",
+                  "name": "appIcon",
+                  "width": 64,
+                  "height": 64,
+                  "iconFontName": "child_care",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$primary"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NZYF2",
+              "name": "brandingText",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "LkHgT",
+                  "name": "appName",
+                  "fill": "#FFFFFF",
+                  "content": "Baby Care",
+                  "fontFamily": "Inter",
+                  "fontSize": 32,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "sX8Qa",
+                  "name": "appTagline",
+                  "opacity": 0.8,
+                  "fill": "#FFFFFF",
+                  "content": "Track, Care, Connect",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal",
+                  "letterSpacing": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2TC1s",
+          "name": "loadingSection",
+          "width": 200,
+          "layout": "vertical",
+          "gap": 16,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "i1Asu",
+              "name": "progressBar",
+              "opacity": 0.3,
+              "width": "fill_container",
+              "height": 4,
+              "fill": "#FFFFFF",
+              "cornerRadius": 2,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yz2wq",
+                  "name": "progressFill",
+                  "width": 120,
+                  "height": 4,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 2
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "8gBLi",
+              "name": "loadingText",
+              "opacity": 0.7,
+              "fill": "#FFFFFF",
+              "content": "Loading...",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gbb38",
+          "name": "versionInfo",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "z6dBS",
+              "name": "versionText",
+              "opacity": 0.5,
+              "fill": "#FFFFFF",
+              "content": "Version 1.0.0",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "4NqZk",
+              "name": "copyrightText",
+              "opacity": 0.5,
+              "fill": "#FFFFFF",
+              "content": "© 2026 Baby Care AI",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {
