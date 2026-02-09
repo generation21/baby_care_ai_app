@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import 'dashboard_screen.dart';
+import '../states/auth_state.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,15 +16,22 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToDashboard();
+    _checkAuthAndNavigate();
   }
 
-  Future<void> _navigateToDashboard() async {
+  Future<void> _checkAuthAndNavigate() async {
+    // 스플래시 화면 표시 시간
     await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
+
+    if (!mounted) return;
+
+    final authState = context.read<AuthState>();
+    
+    // 인증 상태 확인 후 적절한 화면으로 이동
+    if (authState.isAuthenticated) {
+      context.go('/dashboard');
+    } else {
+      context.go('/login');
     }
   }
 

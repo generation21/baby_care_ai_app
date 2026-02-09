@@ -25,6 +25,7 @@ class ApiConfig {
   /// Dio 인스턴스 생성
   /// 
   /// 기본 설정이 적용된 Dio 인스턴스를 반환합니다.
+  /// 인증 인터셉터는 ApiClient에서 추가됩니다.
   static Dio createDio() {
     final dio = Dio(
       BaseOptions(
@@ -39,14 +40,16 @@ class ApiConfig {
       ),
     );
 
-    // 인터셉터 추가 (필요시)
-    dio.interceptors.add(
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
-    );
+    // 로깅 인터셉터 추가 (개발용)
+    if (useMockService) {
+      dio.interceptors.add(
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          error: true,
+        ),
+      );
+    }
 
     return dio;
   }

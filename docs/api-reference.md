@@ -22,12 +22,157 @@ Authorization: Bearer <firebase_id_token>
 
 ## 📋 목차
 
-1. [Baby Profile API](#baby-profile-api)
-2. [Feeding Record API](#feeding-record-api)
-3. [Care Record API](#care-record-api)
-4. [GPT Conversation API](#gpt-conversation-api)
-5. [Dashboard API](#dashboard-api)
-6. [에러 응답](#에러-응답)
+1. [Authentication & Users API](#authentication--users-api)
+2. [Baby Profile API](#baby-profile-api)
+3. [Feeding Record API](#feeding-record-api)
+4. [Care Record API](#care-record-api)
+5. [GPT Conversation API](#gpt-conversation-api)
+6. [Dashboard API](#dashboard-api)
+7. [에러 응답](#에러-응답)
+
+---
+
+## Authentication & Users API
+
+### 인증 방식
+
+BabyCareAI API는 **Supabase Authentication**을 사용합니다.
+
+- **회원가입/로그인**: Supabase 클라이언트 SDK에서 처리
+- **토큰**: 
+  - Access Token (JWT 형식, 유효기간 1시간)
+  - Refresh Token (자동 갱신용, 유효기간 30일)
+- **서버 검증**: 모든 API 요청 시 Access Token 검증
+
+**자세한 인증 가이드**: [authentication-api.md](authentication-api.md)
+
+---
+
+### 디바이스 등록
+
+앱 설치 후 첫 실행 시 또는 FCM 토큰 갱신 시 호출합니다.
+
+```http
+POST /api/v1/users/devices
+Authorization: Bearer <supabase_access_token>
+```
+
+**Request Body**:
+```json
+{
+  "device_token": "fcm_token_or_apns_token",
+  "platform": "ios",
+  "app_id": "com.fromnowon.babycare"
+}
+```
+
+**Required Fields**:
+- `device_token` (string): FCM/APNS 토큰
+- `platform` (string): "ios" 또는 "android"
+- `app_id` (string): 앱 번들 ID
+
+**Response 200**:
+```json
+{
+  "id": 1,
+  "user_id": "user-123",
+  "device_token": "fcm_token_or_apns_token",
+  "platform": "ios",
+  "app_id": "com.fromnowon.babycare",
+  "is_active": true,
+  "created_at": "2025-01-20T10:00:00Z"
+}
+```
+
+**설명**:
+- 같은 `device_token`이 이미 등록되어 있으면 업데이트
+- 신규 `device_token`이면 새로 등록
+- 푸시 알림 전송에 사용됨
+
+---
+
+### 로그인 이력 기록
+
+로그인 성공 후 호출하여 로그인 이력을 기록합니다.
+
+```http
+POST /api/v1/users/login
+Authorization: Bearer <supabase_access_token>
+```
+
+**Request Body**:
+```json
+{
+  "device_token": "fcm_token_or_apns_token",
+  "app_id": "com.fromnowon.babycare"
+}
+```
+
+**Required Fields**:
+- `device_token` (string): 디바이스 토큰
+- `app_id` (string): 앱 ID
+
+**Response 200**:
+```json
+{
+  "message": "Login recorded successfully",
+  "id": 123
+}
+```
+
+**설명**:
+- 사용자의 로그인 시간, IP, User-Agent 자동 기록
+- 보안 감사 및 분석에 사용
+
+---
+
+### 사용자 디바이스 목록 조회
+
+현재 사용자의 등록된 디바이스 목록을 조회합니다.
+
+```http
+GET /api/v1/users/{user_id}/devices
+Authorization: Bearer <supabase_access_token>
+```
+
+**Path Parameters**:
+- `user_id` (string, required): 사용자 ID
+
+**Response 200**:
+```json
+[
+  {
+    "id": 1,
+    "user_id": "user-123",
+    "device_token": "fcm_token_1",
+    "platform": "ios",
+    "app_id": "com.fromnowon.babycare",
+    "is_active": true,
+    "created_at": "2025-01-20T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "user_id": "user-123",
+    "device_token": "fcm_token_2",
+    "platform": "android",
+    "app_id": "com.fromnowon.babycare",
+    "is_active": true,
+    "created_at": "2025-01-21T10:00:00Z"
+  }
+]
+```
+
+**Response 403**:
+```json
+{
+  "detail": "Forbidden: You can only view your own devices"
+}
+```
+
+**설명**:
+- 사용자는 자신의 디바이스만 조회 가능
+- 다중 디바이스 로그인 확인
+- 디바이스 관리 기능에 사용
 
 ---
 
@@ -36,7 +181,7 @@ Authorization: Bearer <firebase_id_token>
 ### 아이 목록 조회
 
 ```http
-GET /babies
+GET /api/v1/baby-care-ai/babies
 ```
 
 **Query Parameters:**

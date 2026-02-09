@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_bar_widget.dart';
@@ -8,6 +10,7 @@ import '../widgets/stat_card.dart';
 import '../widgets/timer_widget.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/record_list_item.dart';
+import '../states/auth_state.dart';
 import 'add_feeding_screen.dart';
 import 'ai_chat_screen.dart';
 
@@ -33,6 +36,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('로그아웃'),
+        content: const Text('정말 로그아웃 하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.error,
+            ),
+            child: const Text('로그아웃'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final authState = context.read<AuthState>();
+      await authState.signOut();
+      if (mounted) {
+        context.go('/login');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +75,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           children: [
             // App Bar
-            const AppBarWidget(title: 'Baby Care'),
+            AppBarWidget(
+              title: 'Baby Care',
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout_outlined),
+                  color: AppColors.textSecondary,
+                  onPressed: _handleLogout,
+                  tooltip: '로그아웃',
+                ),
+              ],
+            ),
             
             // Scroll Content
             Expanded(
