@@ -118,6 +118,39 @@ class FeedingState extends ChangeNotifier {
     }
   }
 
+  /// 수유 기록 생성 (API 호출)
+  Future<FeedingRecord> createFeedingRecord(
+    int babyId, {
+    required FeedingType feedingType,
+    int? amount,
+    String? unit,
+    int? durationMinutes,
+    String? side,
+    String? notes,
+    String? recordedAt,
+  }) async {
+    try {
+      final newRecord = await _apiService.createFeedingRecord(
+        babyId,
+        feedingType: feedingType,
+        amount: amount,
+        unit: unit,
+        durationMinutes: durationMinutes,
+        side: side,
+        notes: notes,
+        recordedAt: recordedAt,
+      );
+      
+      // 목록 맨 앞에 추가
+      _records.insert(0, newRecord);
+      notifyListeners();
+      
+      return newRecord;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// 수유 기록 생성 후 목록에 추가
   void addRecord(FeedingRecord record) {
     _records.insert(0, record);

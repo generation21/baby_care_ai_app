@@ -118,6 +118,45 @@ class CareState extends ChangeNotifier {
     }
   }
 
+  /// 육아 기록 생성 (API 호출)
+  Future<CareRecord> createCareRecord(
+    int babyId, {
+    required CareRecordType recordType,
+    DiaperType? diaperType,
+    String? sleepStart,
+    String? sleepEnd,
+    double? temperature,
+    String? temperatureUnit,
+    String? medicineName,
+    String? medicineDosage,
+    String? notes,
+    String? recordedAt,
+  }) async {
+    try {
+      final newRecord = await _apiService.createCareRecord(
+        babyId,
+        recordType: recordType,
+        diaperType: diaperType,
+        sleepStart: sleepStart,
+        sleepEnd: sleepEnd,
+        temperature: temperature,
+        temperatureUnit: temperatureUnit,
+        medicineName: medicineName,
+        medicineDosage: medicineDosage,
+        notes: notes,
+        recordedAt: recordedAt,
+      );
+      
+      // 목록 맨 앞에 추가
+      _records.insert(0, newRecord);
+      notifyListeners();
+      
+      return newRecord;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// 육아 기록 생성 후 목록에 추가
   void addRecord(CareRecord record) {
     _records.insert(0, record);

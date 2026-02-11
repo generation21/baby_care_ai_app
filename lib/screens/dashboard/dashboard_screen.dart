@@ -166,30 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       floatingActionButton: _isLoading || _dashboard == null
           ? null
           : QuickAddButton(
-              onAddFeeding: () {
-                // TODO: 수유 추가 화면으로 이동
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('수유 추가 화면 준비 중입니다')),
-                );
-              },
-              onAddDiaper: () {
-                // TODO: 기저귀 추가 화면으로 이동
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('기저귀 추가 화면 준비 중입니다')),
-                );
-              },
-              onAddSleep: () {
-                // TODO: 수면 추가 화면으로 이동
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('수면 추가 화면 준비 중입니다')),
-                );
-              },
-              onAddHealth: () {
-                // TODO: 건강 추가 화면으로 이동
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('건강 추가 화면 준비 중입니다')),
-                );
-              },
+              babyId: _dashboard!.babyInfo.id,
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
