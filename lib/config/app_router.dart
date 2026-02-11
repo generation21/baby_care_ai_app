@@ -5,7 +5,7 @@ import '../screens/add_child_screen.dart';
 import '../screens/ai_chat_screen.dart';
 import '../screens/babies_screen.dart';
 import '../screens/baby_detail_screen.dart';
-import '../screens/dashboard_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
