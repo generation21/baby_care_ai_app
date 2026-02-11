@@ -30,6 +30,7 @@ class AppColors {
   // Background Colors
   static const Color background = Color(0xFFF9F9F9);
   static const Color backgroundSecondary = Color(0xFFEEEEEE);
+  static const Color surfaceBackground = Color(0xFFF8F9FA);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF212121);

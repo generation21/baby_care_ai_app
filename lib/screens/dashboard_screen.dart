@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -101,6 +102,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return '$days일';
   }
 
+  /// 안전한 숫자 파싱 (문자열 또는 숫자를 double로 변환)
+  double _parseNumeric(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  /// 안전한 정수 파싱 (문자열 또는 숫자를 int로 변환)
+  int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +126,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const AppBarWidget(title: 'Baby Care'),
+            AppBarWidget(
+              title: 'Baby Care',
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add, color: AppColors.textPrimary),
+                  onPressed: () async {
+                    await context.push('/add-child');
+                    _loadDashboard();
+                  },
+                  tooltip: '아이 추가',
+                ),
+              ],
+            ),
             Expanded(
               child: _buildContent(),
             ),
@@ -152,11 +182,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final activeTimer = _dashboardData?['active_feeding_timer'] as Map<String, dynamic>?;
     final babyName = baby?['name'] as String? ?? '아이';
     final babyAge = _formatAge(baby);
-    final feedingCount = dailySummary?['feeding_count'] as int? ?? 0;
-    final feedingAmount = dailySummary?['total_feeding_amount'] as num? ?? 0;
-    final sleepDurationMin = dailySummary?['total_sleep_duration_minutes'] as int? ?? 0;
-    final sleepNapCount = dailySummary?['sleep_count'] as int? ?? 0;
-    final diaperCount = dailySummary?['diaper_count'] as int? ?? 0;
+    final feedingCount = _parseInt(dailySummary?['feeding_count']);
+    final feedingAmount = _parseNumeric(dailySummary?['total_feeding_amount']);
+    final sleepDurationMin = _parseInt(dailySummary?['total_sleep_duration_minutes']);
+    final sleepNapCount = _parseInt(dailySummary?['sleep_count']);
+    final diaperCount = _parseInt(dailySummary?['diaper_count']);
     final lastDiaper = lastRecords['diaper'] as Map<String, dynamic>?;
     final lastDiaperTime = lastDiaper?['relative_time'] as String? ?? '-';
 
@@ -175,6 +205,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 '아이를 추가하면 대시보드에 기록이 표시됩니다.',
                 style: AppTextStyles.body2,
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  await context.push('/add-child');
+                  _loadDashboard();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  '아이 등록하기',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),

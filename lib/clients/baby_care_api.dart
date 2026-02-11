@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'api_client.dart';
 
 /// Baby Care AI API 클라이언트
@@ -36,7 +37,11 @@ class BabyCareApi {
   /// 아이 등록
   /// POST /api/v1/baby-care-ai/babies
   Future<Map<String, dynamic>> createBaby(Map<String, dynamic> data) async {
+    debugPrint('🌐 BabyCareApi - POST 요청: $_basePath/babies');
+    debugPrint('🌐 BabyCareApi - 요청 데이터: $data');
     final response = await _apiClient.dio.post('$_basePath/babies', data: data);
+    debugPrint('🌐 BabyCareApi - 응답 상태: ${response.statusCode}');
+    debugPrint('🌐 BabyCareApi - 응답 데이터: ${response.data}');
     return response.data as Map<String, dynamic>;
   }
 

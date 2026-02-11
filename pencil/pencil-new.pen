@@ -6403,6 +6403,223 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "FR4x9",
+      "x": 2975,
+      "y": 0,
+      "name": "Add Child Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "#F8F9FA",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "FIoES",
+          "type": "ref",
+          "ref": "6OGbl",
+          "width": "fill_container",
+          "name": "appBar",
+          "descendants": {
+            "kHtp6": {
+              "content": "아이 등록"
+            },
+            "bwQ51": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Qnpbw",
+          "name": "content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "RE28w",
+              "name": "formSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "9fZvG",
+                  "type": "ref",
+                  "ref": "ipaEE",
+                  "width": "fill_container",
+                  "name": "nameField",
+                  "descendants": {
+                    "QhQ9M": {
+                      "content": "이름"
+                    },
+                    "f5XUC": {
+                      "content": "아이 이름을 입력하세요"
+                    },
+                    "EfIfY": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "6uGIl",
+                  "type": "ref",
+                  "ref": "ipaEE",
+                  "width": "fill_container",
+                  "name": "birthdateField",
+                  "descendants": {
+                    "QhQ9M": {
+                      "content": "생년월일"
+                    },
+                    "f5XUC": {
+                      "content": "YYYY-MM-DD"
+                    },
+                    "EfIfY": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "dg50n",
+                  "name": "genderLabel",
+                  "fill": "$text_primary",
+                  "content": "성별",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "xuojr",
+                  "type": "ref",
+                  "ref": "MyvS0",
+                  "width": "fill_container",
+                  "name": "genderControl",
+                  "descendants": {
+                    "ycZt3": {
+                      "content": "남아"
+                    },
+                    "XekBm": {
+                      "content": "여아"
+                    },
+                    "vTgwX": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "qHWSS",
+                  "type": "ref",
+                  "ref": "ipaEE",
+                  "width": "fill_container",
+                  "name": "heightField",
+                  "descendants": {
+                    "QhQ9M": {
+                      "content": "키 (cm)"
+                    },
+                    "f5XUC": {
+                      "content": "예: 50"
+                    },
+                    "EfIfY": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "6BAi2",
+                  "type": "ref",
+                  "ref": "ipaEE",
+                  "width": "fill_container",
+                  "name": "weightField",
+                  "descendants": {
+                    "QhQ9M": {
+                      "content": "몸무게 (kg)"
+                    },
+                    "f5XUC": {
+                      "content": "예: 3.5"
+                    },
+                    "EfIfY": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "rGjnD",
+                  "name": "noteLabel",
+                  "fill": "$text_primary",
+                  "content": "메모",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "pIFsy",
+                  "name": "noteField",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NV9cg",
+                      "name": "noteInput",
+                      "width": "fill_container",
+                      "height": 120,
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "0pgDF",
+                          "name": "notePlaceholder",
+                          "fill": "$text_disabled",
+                          "content": "아이에 대한 메모를 입력하세요",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "2ZlWh",
+              "type": "ref",
+              "ref": "Pjyc1",
+              "width": "fill_container",
+              "height": 52,
+              "name": "registerBtn",
+              "descendants": {
+                "Q0gJh": {
+                  "enabled": false
+                },
+                "Cbq6K": {
+                  "content": "등록하기"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

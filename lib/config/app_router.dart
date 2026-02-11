@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../screens/add_child_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
@@ -40,6 +41,11 @@ class AppRouter {
           path: '/dashboard',
           name: 'dashboard',
           builder: (context, state) => const DashboardScreen(),
+        ),
+        GoRoute(
+          path: '/add-child',
+          name: 'add-child',
+          builder: (context, state) => const AddChildScreen(),
         ),
       ],
     );

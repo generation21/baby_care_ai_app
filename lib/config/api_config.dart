@@ -41,15 +41,15 @@ class ApiConfig {
     );
 
     // 로깅 인터셉터 추가 (개발용)
-    if (useMockService) {
-      dio.interceptors.add(
-        LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-          error: true,
-        ),
-      );
-    }
+    dio.interceptors.add(
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        error: true,
+        requestHeader: true,
+        responseHeader: false,
+      ),
+    );
 
     return dio;
   }
