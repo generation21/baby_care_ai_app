@@ -4,7 +4,7 @@
 
 **Base URL**: `/api/v1/baby-care-ai`
 
-**인증**: Firebase ID Token (Bearer Token)
+**인증**: Supabase Access Token (Bearer Token)
 
 **Content-Type**: `application/json`
 
@@ -12,11 +12,14 @@
 
 ## 인증
 
-모든 API 요청에는 Firebase ID Token이 필요합니다.
+모든 API 요청에는 Supabase Access Token이 필요합니다.
+BabyCareAI는 **Supabase 익명 인증**을 사용하며, 앱 실행 시 자동으로 토큰이 발급됩니다.
 
 ```http
-Authorization: Bearer <firebase_id_token>
+Authorization: Bearer <supabase_access_token>
 ```
+
+자세한 인증 가이드: [authentication-api.md](authentication-api.md)
 
 ---
 
@@ -36,13 +39,15 @@ Authorization: Bearer <firebase_id_token>
 
 ### 인증 방식
 
-BabyCareAI API는 **Supabase Authentication**을 사용합니다.
+BabyCareAI API는 **Supabase Anonymous Authentication** (기기 기반 인증)을 사용합니다.
 
-- **회원가입/로그인**: Supabase 클라이언트 SDK에서 처리
-- **토큰**: 
-  - Access Token (JWT 형식, 유효기간 1시간)
+- **인증 방식**: 앱 실행 시 Supabase 익명 사용자 자동 생성
+- **사용자 입력**: 불필요 (이메일, 비밀번호, 소셜 로그인 없음)
+- **토큰**:
+  - Access Token (JWT 형식, 유효기간 1시간, 자동 갱신)
   - Refresh Token (자동 갱신용, 유효기간 30일)
-- **서버 검증**: 모든 API 요청 시 Access Token 검증
+- **서버 검증**: `supabase.auth.get_user(token)`으로 검증
+- **향후 계획**: Google 계정 연동 (기기 변경 시 데이터 이전)
 
 **자세한 인증 가이드**: [authentication-api.md](authentication-api.md)
 

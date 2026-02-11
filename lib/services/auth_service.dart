@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
+import 'device_service.dart';
 
 /// 인증 관련 예외 클래스
 class AppAuthException implements Exception {
@@ -10,117 +11,52 @@ class AppAuthException implements Exception {
   String toString() => message;
 }
 
-/// 인증 서비스 클래스
-/// 
-/// Supabase를 사용한 인증 기능을 제공합니다.
+/// 디바이스 기반 인증 서비스 (Supabase 익명 인증)
+///
+/// Supabase 익명 로그인으로 백엔드 API 인증을 처리합니다.
+/// 회원가입/소셜 로그인 없이 기기 정보만으로 자동 인증됩니다.
 class AuthService {
   final SupabaseClient _supabase = SupabaseConfig.client;
+  final DeviceService _deviceService = DeviceService();
 
-  /// 현재 사용자 세션
+  /// 현재 세션
   Session? get currentSession => _supabase.auth.currentSession;
 
-  /// 현재 사용자 정보
+  /// 현재 사용자
   User? get currentUser => _supabase.auth.currentUser;
 
-  /// 로그인 상태 확인
+  /// Access Token (백엔드 API용)
+  String? get accessToken => _supabase.auth.currentSession?.accessToken;
+
+  /// 사용자 ID (Supabase UUID)
+  String? get userId => _supabase.auth.currentUser?.id;
+
+  /// 로그인 상태
   bool get isAuthenticated => currentUser != null;
 
-  /// 이메일과 비밀번호로 회원가입
-  /// 
-  /// [email] 사용자 이메일
-  /// [password] 비밀번호 (최소 6자 이상)
-  /// [metadata] 추가 사용자 정보 (선택사항)
-  /// 
-  /// 반환값: 등록된 사용자 정보
-  Future<AuthResponse> signUp({
-    required String email,
-    required String password,
-    Map<String, dynamic>? metadata,
-  }) async {
+  /// 익명 로그인 (디바이스 기반)
+  ///
+  /// 앱 시작 시 호출하여 Supabase 익명 사용자를 생성합니다.
+  /// 백엔드가 이 토큰을 검증합니다.
+  Future<void> autoSignIn() async {
     try {
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: metadata,
-      );
+      final session = _supabase.auth.currentSession;
 
-      if (response.user == null) {
-        throw AppAuthException('회원가입에 실패했습니다.');
+      if (session != null) {
+        print('[AuthService] 기존 세션 존재: ${session.user.id}');
+        return;
       }
 
-      return response;
+      print('[AuthService] Supabase signInAnonymously 호출...');
+      final response = await _supabase.auth.signInAnonymously();
+      print('[AuthService] Supabase signInAnonymously 완료: ${response.user?.id}');
     } on AuthException catch (e) {
-      throw AppAuthException(_handleSignUpError(e));
+      print('[AuthService] Supabase AuthException: ${e.message}');
+      throw AppAuthException('자동 로그인에 실패했습니다: ${e.message}');
     } catch (e) {
-      throw AppAuthException('회원가입 중 오류가 발생했습니다: ${e.toString()}');
+      print('[AuthService] Supabase 로그인 실패: $e');
+      throw AppAuthException('자동 로그인에 실패했습니다: ${e.toString()}');
     }
-  }
-
-  /// 회원가입 에러 처리
-  String _handleSignUpError(AuthException e) {
-    final message = e.message.toLowerCase();
-    
-    if (message.contains('already registered') || 
-        message.contains('user already registered')) {
-      return '이미 사용 중인 이메일입니다.';
-    }
-    if (message.contains('invalid email')) {
-      return '유효하지 않은 이메일 형식입니다.';
-    }
-    if (message.contains('weak password') || 
-        message.contains('password')) {
-      return '비밀번호는 최소 6자 이상이어야 합니다.';
-    }
-    
-    return '회원가입에 실패했습니다: ${e.message}';
-  }
-
-  /// 이메일과 비밀번호로 로그인
-  /// 
-  /// [email] 사용자 이메일
-  /// [password] 비밀번호
-  /// 
-  /// 반환값: 인증 응답
-  Future<AuthResponse> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      if (response.user == null) {
-        throw AppAuthException('로그인에 실패했습니다.');
-      }
-
-      return response;
-    } on AuthException catch (e) {
-      throw AppAuthException(_handleSignInError(e));
-    } catch (e) {
-      throw AppAuthException('로그인 중 오류가 발생했습니다: ${e.toString()}');
-    }
-  }
-
-  /// 로그인 에러 처리
-  String _handleSignInError(AuthException e) {
-    final message = e.message.toLowerCase();
-    
-    if (message.contains('invalid login credentials')) {
-      return '이메일 또는 비밀번호가 일치하지 않습니다.';
-    }
-    if (message.contains('email not confirmed')) {
-      return '이메일 확인이 필요합니다. 이메일을 확인해주세요.';
-    }
-    if (message.contains('user not found')) {
-      return '등록되지 않은 이메일입니다.';
-    }
-    if (message.contains('invalid email')) {
-      return '유효하지 않은 이메일 형식입니다.';
-    }
-    
-    return '로그인에 실패했습니다: ${e.message}';
   }
 
   /// 로그아웃
@@ -132,32 +68,21 @@ class AuthService {
     }
   }
 
-  /// 비밀번호 재설정 이메일 전송
-  /// 
-  /// [email] 비밀번호를 재설정할 이메일 주소
-  Future<void> resetPassword(String email) async {
+  /// 디바이스 ID (디바이스 등록/로그인 이력용)
+  Future<String> getDeviceId() => _deviceService.getDeviceId();
+
+  /// 플랫폼 정보
+  String get platform => _deviceService.platform;
+
+  /// 앱 ID
+  static const String appId = 'app.babycareai';
+
+  /// 토큰 새로고침
+  Future<void> refreshToken() async {
     try {
-      await _supabase.auth.resetPasswordForEmail(
-        email,
-        redirectTo: null, // 앱 내에서 처리할 경우 null
-      );
+      await _supabase.auth.refreshSession();
     } catch (e) {
-      throw AppAuthException('비밀번호 재설정 이메일 전송 중 오류가 발생했습니다: ${e.toString()}');
+      throw AppAuthException('토큰 갱신에 실패했습니다: ${e.toString()}');
     }
   }
-
-  /// 현재 세션 새로고침
-  Future<Session?> refreshSession() async {
-    try {
-      final response = await _supabase.auth.refreshSession();
-      return response.session;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// 인증 상태 변경 스트림 구독
-  /// 
-  /// 로그인/로그아웃 상태 변경을 감지할 수 있습니다.
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 }

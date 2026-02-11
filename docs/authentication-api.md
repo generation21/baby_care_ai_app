@@ -2,83 +2,144 @@
 
 ## 개요
 
-BabyCareAI API는 **Supabase Authentication**을 사용하여 사용자 인증을 처리합니다.
+BabyCareAI는 **Supabase Anonymous Authentication**을 사용하여 기기 기반 인증을 처리합니다.
+사용자는 이메일, 비밀번호, 소셜 로그인 없이 앱을 설치하고 바로 사용할 수 있습니다.
 
-- **회원가입 및 로그인**: Supabase 클라이언트 SDK를 통해 처리
-- **토큰 검증**: 서버에서 Supabase Access Token을 검증
-- **사용자 관리**: 서버 API를 통해 디바이스 및 로그인 이력 관리
+- **기기 기반 인증**: 앱 첫 실행 시 Supabase 익명 사용자 자동 생성
+- **토큰 검증**: 서버에서 Supabase Access Token 검증
+- **향후 계획**: Google 계정 연동 (익명 → 정식 계정 업그레이드)
 
 ---
 
 ## 📋 목차
 
-1. [인증 흐름](#인증-흐름)
-2. [Supabase 클라이언트 SDK (회원가입/로그인)](#supabase-클라이언트-sdk)
-3. [서버 API (디바이스 관리)](#서버-api)
-4. [Flutter 통합 예시](#flutter-통합-예시)
-5. [에러 처리](#에러-처리)
+1. [인증 방식 비교](#인증-방식-비교)
+2. [인증 흐름](#인증-흐름)
+3. [Supabase 익명 인증 설정](#supabase-익명-인증-설정)
+4. [Flutter 구현](#flutter-구현)
+5. [서버 API](#서버-api)
+6. [향후: Google 계정 연동](#향후-google-계정-연동)
+7. [에러 처리](#에러-처리)
+8. [보안 고려사항](#보안-고려사항)
+9. [FAQ](#faq)
+
+---
+
+## 인증 방식 비교
+
+### 왜 익명 인증인가?
+
+| 항목 | 이메일/비밀번호 | 소셜 로그인 | 익명 인증 (현재) |
+|------|---------------|-----------|----------------|
+| 사용자 진입 장벽 | 높음 | 중간 | 없음 |
+| 회원가입 필요 | O | O | X |
+| 앱 설치 후 즉시 사용 | X | X | O |
+| 기기 변경 시 데이터 이전 | 가능 | 가능 | 계정 연동 후 가능 |
+| 구현 복잡도 | 중간 | 높음 | 낮음 |
+
+### BabyCareAI 인증 로드맵
+
+```
+Phase 1 (현재): 익명 인증 → 앱 설치 즉시 사용 가능
+Phase 2 (향후): Google 계정 연동 → 기기 변경 시 데이터 이전 지원
+```
 
 ---
 
 ## 인증 흐름
 
-### 전체 인증 프로세스
+### 첫 실행 (익명 사용자 생성)
 
 ```mermaid
 sequenceDiagram
-    participant Client as Flutter 앱
+    participant App as Flutter 앱
     participant Supabase as Supabase Auth
     participant Server as BabyCareAI API
-    
-    Client->>Supabase: 1. 회원가입/로그인
-    Supabase-->>Client: 2. Access Token + Refresh Token
-    Client->>Client: 3. Token 저장
-    Client->>Server: 4. API 요청 (Bearer Token)
-    Server->>Supabase: 5. Token 검증
-    Supabase-->>Server: 6. 사용자 정보
-    Server-->>Client: 7. API 응답
+
+    App->>App: 1. 앱 첫 실행 감지
+    App->>Supabase: 2. signInAnonymously()
+    Supabase-->>App: 3. Access Token + Refresh Token + User ID
+    App->>App: 4. Token 자동 저장 (SDK 처리)
+    App->>Server: 5. API 요청 (Bearer Token)
+    Server->>Supabase: 6. Token 검증 (get_user)
+    Supabase-->>Server: 7. 사용자 정보 (is_anonymous: true)
+    Server-->>App: 8. API 응답
 ```
 
-### 단계별 설명
+### 재실행 (기존 세션 복원)
 
-1. **회원가입/로그인** (클라이언트)
-   - Supabase 클라이언트 SDK 사용
-   - 이메일/비밀번호, OAuth (Google, Apple 등)
+```mermaid
+sequenceDiagram
+    participant App as Flutter 앱
+    participant Supabase as Supabase Auth
+    participant Server as BabyCareAI API
 
-2. **Token 발급** (Supabase)
-   - Access Token: API 요청용 (유효기간: 1시간)
-   - Refresh Token: Access Token 갱신용 (유효기간: 30일)
-   - JWT 형식
+    App->>App: 1. 앱 실행
+    App->>Supabase: 2. 저장된 Session 자동 복원
+    Supabase-->>App: 3. 기존 Access Token (자동 갱신)
+    App->>Server: 4. API 요청 (Bearer Token)
+    Server-->>App: 5. API 응답
+```
 
-3. **Token 저장** (클라이언트)
-   - FlutterSecureStorage에 안전하게 저장
-   - 매 API 요청마다 사용
+### 핵심 포인트
 
-4. **API 요청** (클라이언트 → 서버)
-   - Authorization 헤더에 Bearer Token 포함
-
-5. **Token 검증** (서버)
-   - Supabase로 토큰 검증
-   - 사용자 정보 추출
-
-6. **API 응답** (서버 → 클라이언트)
+- 사용자는 아무것도 입력하지 않아도 됨
+- 앱 설치 → 실행 → 바로 사용 가능
+- Supabase가 고유한 User ID (UUID) 자동 부여
+- 같은 기기에서 앱을 재실행하면 기존 세션이 자동 복원됨
+- Token은 Supabase SDK가 자동으로 저장/갱신 관리
 
 ---
 
-## Supabase 클라이언트 SDK
+## Supabase 익명 인증 설정
 
-### Flutter 앱에서 회원가입/로그인 처리
+### Supabase Dashboard 설정
 
-#### 1. Supabase 설정
+익명 인증을 사용하려면 Supabase Dashboard에서 활성화해야 합니다.
+
+1. [Supabase Dashboard](https://supabase.com/dashboard) 접속
+2. 프로젝트 선택
+3. **Authentication** > **Providers** 이동
+4. **Anonymous Sign-ins** 항목을 **Enabled**로 변경
+5. 저장
+
+### 서버 측 토큰 검증
+
+서버의 `verify_user` 함수는 익명 사용자 토큰도 동일하게 검증합니다.
+**서버 코드 변경은 필요 없습니다.**
+
+```python
+# app/core/auth/service.py (변경 없음)
+async def verify_user(credentials):
+    token = credentials.credentials
+    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+    # 익명 사용자 토큰도 동일하게 검증됨
+    user_response = supabase.auth.get_user(token)
+    user = user_response.user  # user.is_anonymous == True
+
+    return user
+```
+
+- `user.id`: 고유 UUID (익명 사용자도 동일하게 부여)
+- `user.is_anonymous`: `True` (익명 사용자 식별용)
+- 익명 사용자의 `user_id`는 일반 사용자와 동일하게 DB에서 사용 가능
+
+---
+
+## Flutter 구현
+
+### 1. 패키지 설치
 
 **pubspec.yaml**:
 ```yaml
 dependencies:
   supabase_flutter: ^2.5.0
-  flutter_secure_storage: ^9.0.0
+  firebase_messaging: ^15.0.0  # 푸시 알림용 (선택)
 ```
 
-**Supabase 초기화**:
+### 2. Supabase 초기화
+
 ```dart
 // lib/main.dart
 import 'package:flutter/material.dart';
@@ -86,527 +147,298 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Supabase 초기화
+
   await Supabase.initialize(
     url: 'https://sqztapzlinoyckxthyse.supabase.co',
-    anonKey: 'your-anon-key',
+    anonKey: 'your-anon-key',  // Supabase Dashboard > Settings > API에서 확인
   );
-  
-  runApp(MyApp());
+
+  runApp(const MyApp());
 }
 
-// Supabase 클라이언트 접근
+// 전역 Supabase 클라이언트 접근
 final supabase = Supabase.instance.client;
 ```
 
-#### 2. 회원가입 (Sign Up)
+### 3. AuthService 구현
 
-**이메일/비밀번호 회원가입**:
 ```dart
+// lib/services/auth_service.dart
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
-  
-  /// 이메일/비밀번호로 회원가입
-  Future<AuthResponse> signUpWithEmail({
-    required String email,
-    required String password,
-    Map<String, dynamic>? metadata,
-  }) async {
-    try {
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: metadata, // 추가 사용자 정보 (이름, 프로필 사진 등)
-      );
-      
-      if (response.user == null) {
-        throw Exception('회원가입에 실패했습니다.');
-      }
-      
-      // Access Token 확인
-      final session = response.session;
-      if (session != null) {
-        print('Access Token: ${session.accessToken}');
-        print('Refresh Token: ${session.refreshToken}');
-      }
-      
-      return response;
-    } on AuthException catch (e) {
-      throw _handleAuthError(e);
-    }
-  }
-  
-  /// 이메일 확인 필요 여부 체크
-  /// Supabase 프로젝트 설정에 따라 이메일 확인이 필요할 수 있음
-  Future<bool> needsEmailConfirmation() async {
-    // Supabase Dashboard > Authentication > Settings에서 확인
-    return true; // 기본값: 이메일 확인 필요
-  }
-  
-  String _handleAuthError(AuthException e) {
-    switch (e.statusCode) {
-      case '400':
-        if (e.message.contains('already registered')) {
-          return '이미 사용 중인 이메일입니다.';
-        }
-        return '잘못된 요청입니다.';
-      case '422':
-        return '이메일 또는 비밀번호 형식이 올바르지 않습니다.';
-      default:
-        return '회원가입에 실패했습니다: ${e.message}';
-    }
-  }
-}
-```
 
-**회원가입 화면 예시**:
-```dart
-class SignUpScreen extends StatefulWidget {
-  @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
-  bool _isLoading = false;
-  
-  Future<void> _signUp() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final authService = context.read<AuthService>();
-      
-      // 1. Supabase 회원가입
-      await authService.signUpWithEmail(
-        email: _emailController.text,
-        password: _passwordController.text,
-        metadata: {
-          'display_name': _nameController.text,
-        },
-      );
-      
-      // 2. 이메일 확인 안내 (필요시)
-      if (await authService.needsEmailConfirmation()) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('이메일로 전송된 확인 링크를 클릭해주세요.')),
-          );
-        }
-        return;
-      }
-      
-      // 3. 디바이스 등록 (서버 API)
-      final apiClient = context.read<ApiClient>();
-      await apiClient.dio.post('/users/devices', data: {
-        'device_token': 'device-token-from-fcm',
-        'platform': 'android',
-        'app_id': 'com.fromnowon.babycare',
-      });
-      
-      // 4. 로그인 이력 기록
-      await apiClient.dio.post('/users/login', data: {
-        'device_token': 'device-token-from-fcm',
-        'app_id': 'com.fromnowon.babycare',
-      });
-      
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('회원가입')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: '이름'),
-              validator: (value) => value?.isEmpty ?? true ? '이름을 입력하세요' : null,
-            ),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: '이메일'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => value?.isEmpty ?? true ? '이메일을 입력하세요' : null,
-            ),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
-              obscureText: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) return '비밀번호를 입력하세요';
-                if (value.length < 6) return '비밀번호는 최소 6자 이상이어야 합니다';
-                return null;
-              },
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _signUp,
-              child: _isLoading
-                  ? CircularProgressIndicator()
-                  : Text('회원가입'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
-#### 3. 로그인 (Sign In)
-
-**이메일/비밀번호 로그인**:
-```dart
-class AuthService {
-  final SupabaseClient _supabase = Supabase.instance.client;
-  
-  /// 이메일/비밀번호로 로그인
-  Future<AuthResponse> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      
-      if (response.user == null) {
-        throw Exception('로그인에 실패했습니다.');
-      }
-      
-      // Session 정보
-      final session = response.session;
-      if (session != null) {
-        print('Access Token: ${session.accessToken}');
-        print('User ID: ${response.user!.id}');
-        print('Email: ${response.user!.email}');
-      }
-      
-      return response;
-    } on AuthException catch (e) {
-      throw _handleSignInError(e);
-    }
-  }
-  
-  /// Google OAuth 로그인
-  Future<bool> signInWithGoogle() async {
-    try {
-      final result = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'com.fromnowon.babycare://login-callback',
-      );
-      return result;
-    } on AuthException catch (e) {
-      throw 'Google 로그인에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  /// Apple OAuth 로그인
-  Future<bool> signInWithApple() async {
-    try {
-      final result = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: 'com.fromnowon.babycare://login-callback',
-      );
-      return result;
-    } on AuthException catch (e) {
-      throw 'Apple 로그인에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  String _handleSignInError(AuthException e) {
-    if (e.message.contains('Invalid login credentials')) {
-      return '이메일 또는 비밀번호가 일치하지 않습니다.';
-    }
-    if (e.message.contains('Email not confirmed')) {
-      return '이메일 확인이 필요합니다. 이메일을 확인해주세요.';
-    }
-    return '로그인에 실패했습니다: ${e.message}';
-  }
-}
-```
-
-**로그인 화면 예시**:
-```dart
-class SignInScreen extends StatefulWidget {
-  @override
-  State<SignInScreen> createState() => _SignInScreenState();
-}
-
-class _SignInScreenState extends State<SignInScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isLoading = false;
-  
-  Future<void> _signIn() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final authService = context.read<AuthService>();
-      
-      // 1. Supabase 로그인
-      await authService.signInWithEmail(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      
-      // 2. 로그인 이력 기록 (서버 API)
-      final apiClient = context.read<ApiClient>();
-      await apiClient.dio.post('/users/login', data: {
-        'device_token': 'device-token-from-fcm',
-        'app_id': 'com.fromnowon.babycare',
-      });
-      
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('로그인')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: '이메일'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => value?.isEmpty ?? true ? '이메일을 입력하세요' : null,
-            ),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
-              obscureText: true,
-              validator: (value) => value?.isEmpty ?? true ? '비밀번호를 입력하세요' : null,
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _signIn,
-              child: _isLoading
-                  ? CircularProgressIndicator()
-                  : Text('로그인'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/signup'),
-              child: Text('회원가입'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/reset-password'),
-              child: Text('비밀번호 찾기'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
-#### 4. Token 관리
-
-**Access Token 및 Refresh Token 관리**:
-```dart
-class AuthService {
-  final SupabaseClient _supabase = Supabase.instance.client;
-  
   /// 현재 사용자
   User? get currentUser => _supabase.auth.currentUser;
-  
+
   /// 현재 세션
   Session? get currentSession => _supabase.auth.currentSession;
-  
+
+  /// Access Token
+  String? get accessToken => currentSession?.accessToken;
+
   /// 로그인 상태 스트림
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
-  
-  /// Access Token 가져오기
-  String? get accessToken => currentSession?.accessToken;
-  
-  /// Token 자동 갱신 설정
-  /// Supabase는 기본적으로 자동 갱신을 지원합니다.
-  /// Access Token이 만료되기 전에 Refresh Token으로 자동 갱신됨
-  void setupAutoRefresh() {
-    _supabase.auth.onAuthStateChange.listen((data) {
-      final event = data.event;
-      final session = data.session;
-      
-      if (event == AuthChangeEvent.tokenRefreshed) {
-        print('Token refreshed: ${session?.accessToken}');
-      } else if (event == AuthChangeEvent.signedOut) {
-        print('User signed out');
-      } else if (event == AuthChangeEvent.signedIn) {
-        print('User signed in: ${session?.user.email}');
-      }
-    });
+
+  /// 익명 사용자인지 확인
+  bool get isAnonymous => currentUser?.isAnonymous ?? true;
+
+  /// 인증 초기화
+  /// 앱 시작 시 호출. 기존 세션이 없으면 익명 로그인 수행.
+  Future<void> initialize() async {
+    final session = _supabase.auth.currentSession;
+
+    if (session != null) {
+      // 기존 세션 존재 → 자동 복원됨
+      return;
+    }
+
+    // 세션 없음 → 익명 로그인
+    await _signInAnonymously();
   }
-  
-  /// 수동으로 Token 갱신
-  Future<AuthResponse> refreshSession() async {
+
+  /// 익명 로그인 (내부용)
+  Future<AuthResponse> _signInAnonymously() async {
     try {
-      final response = await _supabase.auth.refreshSession();
+      final response = await _supabase.auth.signInAnonymously();
+
+      if (response.user == null) {
+        throw Exception('익명 로그인에 실패했습니다.');
+      }
+
       return response;
     } on AuthException catch (e) {
-      throw 'Token 갱신에 실패했습니다: ${e.message}';
+      throw '인증에 실패했습니다: ${e.message}';
     }
   }
-  
-  /// 로그아웃
+
+  /// 로그아웃 (앱 데이터 초기화 시 사용)
   Future<void> signOut() async {
+    await _supabase.auth.signOut();
+  }
+}
+```
+
+### 4. API 클라이언트
+
+```dart
+// lib/services/api_client.dart
+
+import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class ApiClient {
+  late final Dio _dio;
+
+  ApiClient() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'https://fromnowon-server-production.up.railway.app/api/v1',
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    ));
+
+    // 인증 인터셉터
+    _dio.interceptors.add(_AuthInterceptor());
+  }
+
+  Dio get dio => _dio;
+}
+
+class _AuthInterceptor extends Interceptor {
+  @override
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    // Supabase 세션에서 Access Token 가져오기
+    final session = Supabase.instance.client.auth.currentSession;
+
+    if (session != null) {
+      options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+    }
+
+    handler.next(options);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 401) {
+      _handleUnauthorized(err, handler);
+    } else {
+      handler.next(err);
+    }
+  }
+
+  Future<void> _handleUnauthorized(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     try {
-      await _supabase.auth.signOut();
-    } on AuthException catch (e) {
-      throw '로그아웃에 실패했습니다: ${e.message}';
+      // Token 갱신 시도
+      final response =
+          await Supabase.instance.client.auth.refreshSession();
+
+      if (response.session == null) {
+        // 세션 복구 불가 → 익명 재로그인
+        await Supabase.instance.client.auth.signInAnonymously();
+        final newSession = Supabase.instance.client.auth.currentSession;
+
+        if (newSession == null) {
+          handler.next(err);
+          return;
+        }
+      }
+
+      // 갱신된 Token으로 원래 요청 재시도
+      final session = Supabase.instance.client.auth.currentSession;
+      final options = err.requestOptions;
+      options.headers['Authorization'] = 'Bearer ${session!.accessToken}';
+
+      final retryResponse = await Dio().fetch(options);
+      handler.resolve(retryResponse);
+    } catch (e) {
+      handler.next(err);
     }
   }
 }
 ```
 
-**Token 저장 (자동 처리됨)**:
+### 5. 앱 초기화 및 인증 상태 관리
+
 ```dart
-// Supabase Flutter SDK는 자동으로 Token을 안전하게 저장합니다.
-// FlutterSecureStorage를 내부적으로 사용하므로 별도 저장 로직 불필요
+// lib/main.dart
 
-// Token 접근
-final token = Supabase.instance.client.auth.currentSession?.accessToken;
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Token이 자동으로 갱신되며, API 요청 시 최신 Token이 사용됩니다.
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://sqztapzlinoyckxthyse.supabase.co',
+    anonKey: 'your-anon-key',
+  );
+
+  // 인증 초기화 (기존 세션 복원 또는 익명 로그인)
+  final authService = AuthService();
+  await authService.initialize();
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'BabyCareAI',
+      home: const HomeScreen(),  // 인증 완료 → 바로 홈 화면
+    );
+  }
+}
 ```
 
-#### 5. 비밀번호 재설정
+### 6. 디바이스 등록 (푸시 알림용)
 
 ```dart
-class AuthService {
-  /// 비밀번호 재설정 이메일 전송
-  Future<void> resetPasswordForEmail(String email) async {
+// lib/services/device_service.dart
+
+import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+class DeviceService {
+  final ApiClient _apiClient;
+
+  DeviceService(this._apiClient);
+
+  /// 디바이스 등록
+  /// 앱 시작 후 인증 완료 시 호출
+  Future<void> registerDevice() async {
     try {
-      await _supabase.auth.resetPasswordForEmail(
-        email,
-        redirectTo: 'com.fromnowon.babycare://reset-password',
-      );
-    } on AuthException catch (e) {
-      throw '비밀번호 재설정 이메일 전송에 실패했습니다: ${e.message}';
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null) return;
+
+      await _apiClient.dio.post('/users/devices', data: {
+        'device_token': fcmToken,
+        'platform': Platform.isIOS ? 'ios' : 'android',
+        'app_id': 'com.fromnowon.babycare',
+      });
+    } catch (e) {
+      // 디바이스 등록 실패는 앱 사용에 영향 없음
+      print('Device registration failed: $e');
     }
   }
-  
-  /// 새 비밀번호 설정
-  Future<UserResponse> updatePassword(String newPassword) async {
+
+  /// 로그인 이력 기록
+  Future<void> recordLogin() async {
     try {
-      final response = await _supabase.auth.updateUser(
-        UserAttributes(password: newPassword),
-      );
-      return response;
-    } on AuthException catch (e) {
-      throw '비밀번호 변경에 실패했습니다: ${e.message}';
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null) return;
+
+      await _apiClient.dio.post('/users/login', data: {
+        'device_token': fcmToken,
+        'app_id': 'com.fromnowon.babycare',
+      });
+    } catch (e) {
+      print('Login recording failed: $e');
     }
   }
 }
 ```
 
-#### 6. 사용자 정보 업데이트
+### 7. 전체 앱 초기화 플로우
 
 ```dart
-class AuthService {
-  /// 사용자 메타데이터 업데이트
-  Future<UserResponse> updateUserMetadata({
-    String? displayName,
-    String? photoUrl,
-    Map<String, dynamic>? customData,
-  }) async {
-    try {
-      final updates = <String, dynamic>{};
-      
-      if (displayName != null) {
-        updates['display_name'] = displayName;
-      }
-      if (photoUrl != null) {
-        updates['photo_url'] = photoUrl;
-      }
-      if (customData != null) {
-        updates.addAll(customData);
-      }
-      
-      final response = await _supabase.auth.updateUser(
-        UserAttributes(data: updates),
-      );
-      
-      return response;
-    } on AuthException catch (e) {
-      throw '사용자 정보 업데이트에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  /// 이메일 변경
-  Future<UserResponse> updateEmail(String newEmail) async {
-    try {
-      final response = await _supabase.auth.updateUser(
-        UserAttributes(email: newEmail),
-      );
-      return response;
-    } on AuthException catch (e) {
-      throw '이메일 변경에 실패했습니다: ${e.message}';
-    }
+// lib/app_initializer.dart
+
+class AppInitializer {
+  final AuthService _authService;
+  final DeviceService _deviceService;
+
+  AppInitializer(this._authService, this._deviceService);
+
+  /// 앱 초기화 전체 플로우
+  Future<void> initialize() async {
+    // Step 1: 인증 (기존 세션 복원 또는 익명 로그인)
+    await _authService.initialize();
+
+    // Step 2: 디바이스 등록 (푸시 알림용, 선택)
+    await _deviceService.registerDevice();
+
+    // Step 3: 로그인 이력 기록
+    await _deviceService.recordLogin();
   }
 }
+```
+
+**사용자 경험 요약**:
+```
+앱 설치 → 앱 실행 → (자동 인증) → 홈 화면 → 바로 사용
 ```
 
 ---
 
 ## 서버 API
 
-서버는 디바이스 관리 및 로그인 이력을 추적하는 엔드포인트를 제공합니다.
+### 인증
 
-**Base URL**: `/api/v1/users`
+모든 API 요청에 Supabase Access Token이 필요합니다.
 
-**인증**: Supabase Access Token (Bearer Token) 필수
+```http
+Authorization: Bearer <supabase_access_token>
+```
+
+Supabase SDK가 자동으로 Token을 관리하므로, Flutter에서는 `_AuthInterceptor`가 자동으로 헤더에 추가합니다.
 
 ---
 
 ### 1. 디바이스 등록
-
-앱 설치 후 첫 실행 시 또는 FCM 토큰 갱신 시 호출합니다.
 
 ```http
 POST /api/v1/users/devices
@@ -617,23 +449,24 @@ Content-Type: application/json
 **Request Body**:
 ```json
 {
-  "device_token": "fcm_token_or_apns_token",
+  "device_token": "fcm_token_string",
   "platform": "ios",
   "app_id": "com.fromnowon.babycare"
 }
 ```
 
-**Request Fields**:
-- `device_token` (string, required): FCM/APNS 토큰
-- `platform` (string, required): "ios" 또는 "android"
-- `app_id` (string, required): 앱 번들 ID
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `device_token` | string | O | FCM/APNS 토큰 |
+| `platform` | string | O | `"ios"` 또는 `"android"` |
+| `app_id` | string | O | 앱 번들 ID |
 
 **Response 200**:
 ```json
 {
   "id": 1,
-  "user_id": "uuid-user-123",
-  "device_token": "fcm_token_or_apns_token",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "device_token": "fcm_token_string",
   "platform": "ios",
   "app_id": "com.fromnowon.babycare",
   "is_active": true,
@@ -641,48 +474,13 @@ Content-Type: application/json
 }
 ```
 
-**설명**:
-- 같은 `device_token`이 이미 등록되어 있으면 업데이트
-- 신규 `device_token`이면 새로 등록
-- 푸시 알림 전송에 사용됨
-
-**Flutter 예시**:
-```dart
-import 'package:firebase_messaging/firebase_messaging.dart';
-
-class DeviceService {
-  final ApiClient _apiClient;
-  
-  /// 디바이스 등록
-  Future<void> registerDevice() async {
-    // FCM 토큰 가져오기
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    
-    if (fcmToken == null) {
-      print('Failed to get FCM token');
-      return;
-    }
-    
-    try {
-      await _apiClient.dio.post('/users/devices', data: {
-        'device_token': fcmToken,
-        'platform': Platform.isIOS ? 'ios' : 'android',
-        'app_id': 'com.fromnowon.babycare',
-      });
-      
-      print('Device registered successfully');
-    } catch (e) {
-      print('Device registration failed: $e');
-    }
-  }
-}
-```
+**동작**:
+- 같은 `device_token`이 이미 등록되어 있으면 → 업데이트
+- 신규 `device_token`이면 → 새로 등록
 
 ---
 
 ### 2. 로그인 이력 기록
-
-로그인 성공 후 호출하여 로그인 이력을 기록합니다.
 
 ```http
 POST /api/v1/users/login
@@ -693,14 +491,15 @@ Content-Type: application/json
 **Request Body**:
 ```json
 {
-  "device_token": "fcm_token_or_apns_token",
+  "device_token": "fcm_token_string",
   "app_id": "com.fromnowon.babycare"
 }
 ```
 
-**Request Fields**:
-- `device_token` (string, required): 디바이스 토큰
-- `app_id` (string, required): 앱 ID
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `device_token` | string | O | FCM/APNS 토큰 |
+| `app_id` | string | O | 앱 ID |
 
 **Response 200**:
 ```json
@@ -710,417 +509,138 @@ Content-Type: application/json
 }
 ```
 
-**설명**:
-- 사용자의 로그인 시간, IP, User-Agent 자동 기록
-- 보안 감사 및 분석에 사용
-
-**Flutter 예시**:
-```dart
-class AuthService {
-  /// 로그인 후 이력 기록
-  Future<void> recordLogin(String deviceToken) async {
-    try {
-      await _apiClient.dio.post('/users/login', data: {
-        'device_token': deviceToken,
-        'app_id': 'com.fromnowon.babycare',
-      });
-    } catch (e) {
-      // 로그인 이력 기록 실패는 무시 (선택적 기능)
-      print('Failed to record login: $e');
-    }
-  }
-}
-```
+**자동 수집 정보**: IP 주소, User-Agent
 
 ---
 
 ### 3. 사용자 디바이스 목록 조회
-
-현재 사용자의 등록된 디바이스 목록을 조회합니다.
 
 ```http
 GET /api/v1/users/{user_id}/devices
 Authorization: Bearer <supabase_access_token>
 ```
 
-**Path Parameters**:
-- `user_id` (string, required): 사용자 ID (UUID)
+| 파라미터 | 위치 | 타입 | 설명 |
+|---------|------|------|------|
+| `user_id` | path | string | 사용자 ID (UUID) |
 
 **Response 200**:
 ```json
 [
   {
     "id": 1,
-    "user_id": "uuid-user-123",
+    "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "device_token": "fcm_token_1",
     "platform": "ios",
     "app_id": "com.fromnowon.babycare",
     "is_active": true,
     "created_at": "2025-01-20T10:00:00Z"
-  },
-  {
-    "id": 2,
-    "user_id": "uuid-user-123",
-    "device_token": "fcm_token_2",
-    "platform": "android",
-    "app_id": "com.fromnowon.babycare",
-    "is_active": true,
-    "created_at": "2025-01-21T10:00:00Z"
   }
 ]
 ```
 
-**Response 403**:
+**Response 403**: 자신의 디바이스만 조회 가능
 ```json
 {
   "detail": "Forbidden: You can only view your own devices"
 }
 ```
 
-**설명**:
-- 사용자는 자신의 디바이스만 조회 가능
-- 다중 디바이스 로그인 확인
-- 디바이스 관리 기능에 사용
-
 ---
 
-## Flutter 통합 예시
+## 향후: Google 계정 연동
 
-### 완전한 AuthService 구현
+### 개요
+
+Phase 2에서 익명 사용자를 Google 계정으로 업그레이드할 수 있습니다.
+이를 통해 기기 변경 시 데이터 이전이 가능해집니다.
+
+### 업그레이드 흐름
+
+```mermaid
+sequenceDiagram
+    participant App as Flutter 앱
+    participant Supabase as Supabase Auth
+    participant Google as Google OAuth
+
+    App->>App: 1. "Google 계정 연동" 버튼 클릭
+    App->>Supabase: 2. linkIdentity(Google)
+    Supabase->>Google: 3. Google OAuth 로그인
+    Google-->>Supabase: 4. Google 인증 정보
+    Supabase-->>App: 5. 익명 → 정식 계정 업그레이드
+    Note over App: 기존 User ID 유지, 데이터 그대로 보존
+```
+
+### Flutter 구현 (향후)
 
 ```dart
-// lib/services/auth_service.dart
-
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'dart:io';
-
 class AuthService {
-  final SupabaseClient _supabase = Supabase.instance.client;
-  final ApiClient _apiClient;
-  
-  AuthService(this._apiClient);
-  
-  // 현재 사용자
-  User? get currentUser => _supabase.auth.currentUser;
-  
-  // 현재 세션
-  Session? get currentSession => _supabase.auth.currentSession;
-  
-  // Access Token
-  String? get accessToken => currentSession?.accessToken;
-  
-  // 로그인 상태 스트림
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
-  
-  /// 회원가입
-  Future<AuthResponse> signUp({
-    required String email,
-    required String password,
-    required String displayName,
-  }) async {
+  /// 익명 계정을 Google 계정으로 업그레이드
+  /// 기존 User ID와 모든 데이터가 그대로 유지됨
+  Future<void> linkGoogleAccount() async {
     try {
-      // 1. Supabase 회원가입
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: {
-          'display_name': displayName,
-        },
-      );
-      
-      if (response.user == null) {
-        throw Exception('회원가입에 실패했습니다.');
-      }
-      
-      // 2. 디바이스 등록
-      await _registerDeviceAfterAuth();
-      
-      // 3. 로그인 이력 기록
-      await _recordLogin();
-      
-      return response;
-    } on AuthException catch (e) {
-      throw _handleAuthError(e);
-    }
-  }
-  
-  /// 로그인
-  Future<AuthResponse> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      // 1. Supabase 로그인
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      
-      if (response.user == null) {
-        throw Exception('로그인에 실패했습니다.');
-      }
-      
-      // 2. 로그인 이력 기록
-      await _recordLogin();
-      
-      return response;
-    } on AuthException catch (e) {
-      throw _handleAuthError(e);
-    }
-  }
-  
-  /// Google 로그인
-  Future<bool> signInWithGoogle() async {
-    try {
-      final result = await _supabase.auth.signInWithOAuth(
+      await _supabase.auth.linkIdentity(
         OAuthProvider.google,
         redirectTo: 'com.fromnowon.babycare://login-callback',
       );
-      
-      if (result) {
-        await _recordLogin();
-      }
-      
-      return result;
+    } on AuthException catch (e) {
+      throw 'Google 계정 연동에 실패했습니다: ${e.message}';
+    }
+  }
+
+  /// 다른 기기에서 Google 계정으로 로그인 (데이터 복원)
+  Future<bool> signInWithGoogle() async {
+    try {
+      return await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'com.fromnowon.babycare://login-callback',
+      );
     } on AuthException catch (e) {
       throw 'Google 로그인에 실패했습니다: ${e.message}';
     }
   }
-  
-  /// 로그아웃
-  Future<void> signOut() async {
-    try {
-      await _supabase.auth.signOut();
-    } on AuthException catch (e) {
-      throw '로그아웃에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  /// 비밀번호 재설정 이메일 발송
-  Future<void> resetPassword(String email) async {
-    try {
-      await _supabase.auth.resetPasswordForEmail(
-        email,
-        redirectTo: 'com.fromnowon.babycare://reset-password',
-      );
-    } on AuthException catch (e) {
-      throw '비밀번호 재설정 이메일 전송에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  /// 사용자 정보 업데이트
-  Future<UserResponse> updateUserMetadata({
-    String? displayName,
-    String? photoUrl,
-  }) async {
-    try {
-      final updates = <String, dynamic>{};
-      
-      if (displayName != null) {
-        updates['display_name'] = displayName;
-      }
-      if (photoUrl != null) {
-        updates['photo_url'] = photoUrl;
-      }
-      
-      final response = await _supabase.auth.updateUser(
-        UserAttributes(data: updates),
-      );
-      
-      return response;
-    } on AuthException catch (e) {
-      throw '사용자 정보 업데이트에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  /// Token 수동 갱신
-  Future<AuthResponse> refreshSession() async {
-    try {
-      final response = await _supabase.auth.refreshSession();
-      return response;
-    } on AuthException catch (e) {
-      throw 'Token 갱신에 실패했습니다: ${e.message}';
-    }
-  }
-  
-  // Private: 디바이스 등록
-  Future<void> _registerDeviceAfterAuth() async {
-    try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken == null) return;
-      
-      await _apiClient.dio.post('/users/devices', data: {
-        'device_token': fcmToken,
-        'platform': Platform.isIOS ? 'ios' : 'android',
-        'app_id': 'com.fromnowon.babycare',
-      });
-    } catch (e) {
-      print('Failed to register device: $e');
-    }
-  }
-  
-  // Private: 로그인 이력 기록
-  Future<void> _recordLogin() async {
-    try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken == null) return;
-      
-      await _apiClient.dio.post('/users/login', data: {
-        'device_token': fcmToken,
-        'app_id': 'com.fromnowon.babycare',
-      });
-    } catch (e) {
-      print('Failed to record login: $e');
-    }
-  }
-  
-  // Private: 에러 처리
-  String _handleAuthError(AuthException e) {
-    if (e.message.contains('already registered')) {
-      return '이미 사용 중인 이메일입니다.';
-    }
-    if (e.message.contains('Invalid login credentials')) {
-      return '이메일 또는 비밀번호가 일치하지 않습니다.';
-    }
-    if (e.message.contains('Email not confirmed')) {
-      return '이메일 확인이 필요합니다.';
-    }
-    return '인증에 실패했습니다: ${e.message}';
-  }
 }
 ```
 
----
-
-### API 클라이언트에 인증 통합
+### 계정 연동 설정 화면 (향후)
 
 ```dart
-// lib/services/api_client.dart
-
-import 'package:dio/dio.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-class ApiClient {
-  late final Dio _dio;
-  final SupabaseClient _supabase = Supabase.instance.client;
-  
-  ApiClient() {
-    _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.fromnowon.com/api/v1',
-      connectTimeout: Duration(seconds: 10),
-      receiveTimeout: Duration(seconds: 30),
-    ));
-    
-    // 인증 인터셉터 추가
-    _dio.interceptors.add(AuthInterceptor(_supabase));
-    
-    // 로깅 인터셉터 (개발용)
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-    ));
-  }
-  
-  Dio get dio => _dio;
-}
-
-// 인증 인터셉터
-class AuthInterceptor extends Interceptor {
-  final SupabaseClient _supabase;
-  
-  AuthInterceptor(this._supabase);
-  
-  @override
-  Future<void> onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    // Access Token을 Authorization 헤더에 추가
-    final session = _supabase.auth.currentSession;
-    
-    if (session != null) {
-      options.headers['Authorization'] = 'Bearer ${session.accessToken}';
-    }
-    
-    handler.next(options);
-  }
-  
-  @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
-    // 401 에러 시 토큰 갱신 후 재시도
-    if (err.response?.statusCode == 401) {
-      _handleUnauthorized(err, handler);
-    } else {
-      handler.next(err);
-    }
-  }
-  
-  Future<void> _handleUnauthorized(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    try {
-      // Supabase가 자동으로 토큰 갱신
-      // 수동 갱신이 필요한 경우:
-      final response = await _supabase.auth.refreshSession();
-      
-      if (response.session == null) {
-        // 로그아웃 처리
-        await _supabase.auth.signOut();
-        handler.next(err);
-        return;
-      }
-      
-      // 원래 요청 재시도
-      final options = err.requestOptions;
-      options.headers['Authorization'] = 'Bearer ${response.session!.accessToken}';
-      
-      final retryResponse = await Dio().fetch(options);
-      handler.resolve(retryResponse);
-    } catch (e) {
-      handler.next(err);
-    }
-  }
-}
-```
-
----
-
-### 앱 초기화 및 인증 상태 관리
-
-```dart
-// lib/main.dart
-
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Supabase 초기화
-  await Supabase.initialize(
-    url: 'https://sqztapzlinoyckxthyse.supabase.co',
-    anonKey: 'your-anon-key',
-  );
-  
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
+class AccountSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: StreamBuilder<AuthState>(
-        stream: Supabase.instance.client.auth.onAuthStateChange,
-        builder: (context, snapshot) {
-          // 로그인 상태 확인
-          if (snapshot.hasData && snapshot.data?.session != null) {
-            return HomeScreen();  // 로그인됨
-          } else {
-            return SignInScreen();  // 로그아웃 상태
-          }
-        },
+    final authService = context.read<AuthService>();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('계정 설정')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // 현재 계정 상태
+          ListTile(
+            title: const Text('계정 상태'),
+            subtitle: Text(
+              authService.isAnonymous ? '게스트 (기기 기반)' : 'Google 연동 완료',
+            ),
+            leading: Icon(
+              authService.isAnonymous ? Icons.person_outline : Icons.verified,
+            ),
+          ),
+
+          // Google 연동 버튼 (익명 사용자만 표시)
+          if (authService.isAnonymous) ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Google 계정을 연동하면 기기 변경 시에도\n데이터를 유지할 수 있습니다.',
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: () => authService.linkGoogleAccount(),
+              icon: const Icon(Icons.link),
+              label: const Text('Google 계정 연동'),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -1131,24 +651,52 @@ class MyApp extends StatelessWidget {
 
 ## 에러 처리
 
-### Supabase Auth 에러
+### 인증 관련 에러
 
-| 에러 메시지 | 의미 | 사용자 메시지 |
-|----------|------|--------------|
-| `already registered` | 이메일 중복 | "이미 사용 중인 이메일입니다." |
-| `Invalid login credentials` | 로그인 실패 | "이메일 또는 비밀번호가 일치하지 않습니다." |
-| `Email not confirmed` | 이메일 미확인 | "이메일 확인이 필요합니다." |
-| `User not found` | 사용자 없음 | "등록되지 않은 이메일입니다." |
-| `Invalid email` | 잘못된 이메일 | "유효하지 않은 이메일 형식입니다." |
-| `Weak password` | 약한 비밀번호 | "비밀번호는 최소 6자 이상이어야 합니다." |
+| 상황 | 에러 | 처리 방법 |
+|------|------|---------|
+| 익명 로그인 실패 | `AuthException` | 재시도 (네트워크 문제일 가능성) |
+| Token 만료 | HTTP 401 | SDK가 자동 갱신 / 인터셉터가 재시도 |
+| Session 완전 만료 | Refresh Token 만료 | 익명 재로그인 (새 사용자 생성) |
+| Supabase 서버 오류 | HTTP 500 | 재시도 후 사용자에게 안내 |
+
+### Flutter 에러 처리
+
+```dart
+class AuthService {
+  /// 안전한 인증 초기화 (에러 복구 포함)
+  Future<void> initialize() async {
+    try {
+      final session = _supabase.auth.currentSession;
+
+      if (session != null) {
+        // 기존 세션 존재
+        return;
+      }
+
+      // 익명 로그인
+      await _signInAnonymously();
+    } catch (e) {
+      // 네트워크 오류 등으로 실패 시 재시도
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await _signInAnonymously();
+      } catch (retryError) {
+        // 2차 시도도 실패 → 오프라인 모드 또는 에러 화면
+        throw '서버에 연결할 수 없습니다. 네트워크를 확인해주세요.';
+      }
+    }
+  }
+}
+```
 
 ### 서버 API 에러
 
-| 상태 코드 | 의미 | 예시 |
+| 상태 코드 | 의미 | 설명 |
 |---------|------|------|
-| 401 | Unauthorized | "Invalid authentication credentials" |
-| 403 | Forbidden | "You can only view your own devices" |
-| 500 | Internal Server Error | "Device Register Error: ..." |
+| 401 | Unauthorized | Token이 없거나 유효하지 않음 |
+| 403 | Forbidden | 다른 사용자의 리소스 접근 시도 |
+| 500 | Internal Server Error | 서버 내부 오류 |
 
 ---
 
@@ -1156,242 +704,94 @@ class MyApp extends StatelessWidget {
 
 ### 1. Token 저장
 
+Supabase Flutter SDK는 내부적으로 안전한 저장소를 사용합니다.
+별도의 Token 저장 로직이 필요 없습니다.
+
 ```dart
-// ✅ GOOD - Supabase가 자동으로 FlutterSecureStorage 사용
-// 별도의 Token 저장 로직 불필요
+// Supabase SDK가 자동으로 안전하게 저장
+// iOS: Keychain
+// Android: EncryptedSharedPreferences
+
+// Token 접근이 필요할 때:
 final token = Supabase.instance.client.auth.currentSession?.accessToken;
-
-// ❌ BAD - SharedPreferences (평문 저장)
-final prefs = await SharedPreferences.getInstance();
-await prefs.setString('token', token);  // 보안 취약
 ```
 
-### 2. Token 갱신
+### 2. Token 자동 갱신
 
-```dart
-// Supabase는 자동으로 Access Token 갱신
-// Refresh Token이 유효한 동안 자동으로 새 Access Token 발급
-// 수동 갱신도 가능:
-final response = await Supabase.instance.client.auth.refreshSession();
-```
+| Token 종류 | 유효기간 | 갱신 방법 |
+|-----------|---------|---------|
+| Access Token | 1시간 | Supabase SDK가 자동 갱신 |
+| Refresh Token | 30일 | Access Token 갱신 시 함께 갱신 |
 
-### 3. 로그아웃 시 정리
-
-```dart
-Future<void> signOut() async {
-  // Supabase가 자동으로 Token 및 Session 정리
-  await Supabase.instance.client.auth.signOut();
-  
-  // 추가 로컬 캐시 정리 (선택)
-  // await clearLocalCache();
-}
-```
-
-### 4. RLS (Row Level Security) 활용
-
-Supabase에서는 RLS를 통해 데이터베이스 레벨에서 보안을 강화할 수 있습니다:
+### 3. 익명 사용자 데이터 보호
 
 ```sql
--- Supabase Dashboard > SQL Editor에서 실행
+-- RLS (Row Level Security) 정책
+-- 익명 사용자도 자신의 데이터만 접근 가능
 
--- babies 테이블 RLS 활성화
 ALTER TABLE babies ENABLE ROW LEVEL SECURITY;
 
--- 사용자는 자신의 아이 정보만 조회/수정 가능
-CREATE POLICY "Users can view their own babies"
-ON babies FOR SELECT
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own babies"
-ON babies FOR INSERT
+CREATE POLICY "Users can manage their own babies"
+ON babies FOR ALL
+USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own babies"
-ON babies FOR UPDATE
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own babies"
-ON babies FOR DELETE
-USING (auth.uid() = user_id);
 ```
 
----
+### 4. 앱 삭제 시 동작
 
-## 전체 인증 플로우 예시
+| 상황 | 결과 |
+|------|------|
+| 앱 삭제 후 재설치 | 새 익명 사용자 생성 (이전 데이터 접근 불가) |
+| 앱 삭제 전 Google 연동 | 재설치 후 Google 로그인으로 데이터 복원 가능 |
 
-### 회원가입 전체 플로우
-
-```dart
-Future<void> completeSignUp({
-  required String email,
-  required String password,
-  required String displayName,
-}) async {
-  try {
-    // 1. Supabase 회원가입
-    final response = await Supabase.instance.client.auth.signUp(
-      email: email,
-      password: password,
-      data: {
-        'display_name': displayName,
-      },
-    );
-    
-    if (response.user == null) {
-      throw Exception('회원가입에 실패했습니다.');
-    }
-    
-    // 2. 이메일 확인 필요 여부 체크
-    if (response.session == null) {
-      // 이메일 확인 필요
-      print('이메일 확인이 필요합니다. 이메일을 확인해주세요.');
-      return;
-    }
-    
-    // 3. FCM 토큰 가져오기
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    
-    if (fcmToken == null) {
-      throw Exception('FCM 토큰을 가져오는데 실패했습니다.');
-    }
-    
-    // 4. API 클라이언트 초기화
-    final apiClient = ApiClient();
-    
-    // 5. 디바이스 등록
-    await apiClient.dio.post('/users/devices', data: {
-      'device_token': fcmToken,
-      'platform': Platform.isIOS ? 'ios' : 'android',
-      'app_id': 'com.fromnowon.babycare',
-    });
-    
-    // 6. 로그인 이력 기록
-    await apiClient.dio.post('/users/login', data: {
-      'device_token': fcmToken,
-      'app_id': 'com.fromnowon.babycare',
-    });
-    
-    print('Sign up completed successfully');
-  } catch (e) {
-    print('Sign up error: $e');
-    rethrow;
-  }
-}
-```
-
-### 로그인 전체 플로우
-
-```dart
-Future<void> completeSignIn({
-  required String email,
-  required String password,
-}) async {
-  try {
-    // 1. Supabase 로그인
-    final response = await Supabase.instance.client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-    
-    if (response.user == null) {
-      throw Exception('로그인에 실패했습니다.');
-    }
-    
-    // 2. FCM 토큰 가져오기
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    
-    if (fcmToken == null) {
-      throw Exception('FCM 토큰을 가져오는데 실패했습니다.');
-    }
-    
-    // 3. API 클라이언트 초기화
-    final apiClient = ApiClient();
-    
-    // 4. 로그인 이력 기록
-    await apiClient.dio.post('/users/login', data: {
-      'device_token': fcmToken,
-      'app_id': 'com.fromnowon.babycare',
-    });
-    
-    print('Sign in completed successfully');
-  } catch (e) {
-    print('Sign in error: $e');
-    rethrow;
-  }
-}
-```
-
----
-
-## 테스트 체크리스트
-
-### 회원가입 테스트
-- [ ] 이메일/비밀번호 회원가입 성공
-- [ ] 중복 이메일 에러 처리
-- [ ] 약한 비밀번호 에러 처리
-- [ ] 잘못된 이메일 형식 에러 처리
-- [ ] 이메일 확인 필요 시 안내
-- [ ] 디바이스 등록 성공
-
-### 로그인 테스트
-- [ ] 이메일/비밀번호 로그인 성공
-- [ ] 잘못된 이메일 에러 처리
-- [ ] 잘못된 비밀번호 에러 처리
-- [ ] 이메일 미확인 에러 처리
-- [ ] 로그인 이력 기록 성공
-- [ ] Token 자동 갱신 동작
-- [ ] 401 에러 시 재로그인
-
-### 로그아웃 테스트
-- [ ] Token 및 Session 삭제 성공
-- [ ] 로그아웃 후 API 호출 401 에러
+이것이 향후 Google 계정 연동을 제공하는 이유입니다.
 
 ---
 
 ## FAQ
 
-### Q1. Access Token은 얼마나 유효한가요?
-**A**: Supabase Access Token은 기본적으로 1시간 동안 유효합니다. Refresh Token을 사용하여 자동으로 갱신됩니다.
+### Q1. 사용자가 아무것도 입력하지 않아도 되나요?
+**A**: 네. 앱을 설치하고 실행하면 자동으로 익명 사용자가 생성됩니다.
+Supabase가 고유한 User ID (UUID)를 부여하며, 이 ID로 데이터가 관리됩니다.
 
-### Q2. Refresh Token은 얼마나 유효한가요?
-**A**: Refresh Token은 기본적으로 30일 동안 유효합니다. Supabase Dashboard에서 설정을 변경할 수 있습니다.
+### Q2. Access Token은 얼마나 유효한가요?
+**A**: 1시간입니다. Supabase SDK가 Refresh Token으로 자동 갱신하므로 앱에서 별도 처리가 필요 없습니다.
 
-### Q3. 회원가입 시 이메일 확인이 필요한가요?
-**A**: Supabase 프로젝트 설정에 따라 다릅니다. Dashboard > Authentication > Settings에서 "Enable email confirmations"를 설정할 수 있습니다.
+### Q3. 앱을 삭제하면 데이터가 사라지나요?
+**A**: 앱 삭제 시 로컬 세션이 삭제되어 이전 익명 계정에 접근할 수 없게 됩니다.
+서버의 데이터는 남아있지만 접근할 방법이 없습니다.
+이를 방지하려면 Google 계정 연동(Phase 2)을 사용해야 합니다.
 
-### Q4. 소셜 로그인(Google, Apple)을 추가하려면?
-**A**: Supabase Dashboard > Authentication > Providers에서 원하는 Provider를 활성화하고, Flutter에서 `signInWithOAuth()` 메서드를 사용하면 됩니다.
+### Q4. 여러 기기에서 같은 데이터를 볼 수 있나요?
+**A**: 현재(Phase 1)는 불가능합니다. 각 기기마다 별도의 익명 사용자가 생성됩니다.
+Phase 2에서 Google 계정 연동 후 다른 기기에서 같은 Google 계정으로 로그인하면 데이터 공유가 가능합니다.
 
-### Q5. 여러 디바이스에서 동시 로그인이 가능한가요?
-**A**: 네, Supabase는 기본적으로 다중 디바이스 로그인을 지원합니다. 각 디바이스마다 별도의 Session이 생성됩니다.
+### Q5. 서버 코드를 변경해야 하나요?
+**A**: 아니요. 현재 서버의 `verify_user` 함수는 `supabase.auth.get_user(token)`을 사용하며, 이 함수는 익명 사용자 토큰도 정상적으로 검증합니다. 서버 코드 변경은 불필요합니다.
 
-### Q6. RLS(Row Level Security)를 사용해야 하나요?
-**A**: 네, 강력히 권장합니다. RLS를 사용하면 데이터베이스 레벨에서 보안을 강화할 수 있으며, 사용자가 자신의 데이터만 접근할 수 있도록 제한할 수 있습니다.
+### Q6. 익명 사용자와 정식 사용자의 권한 차이가 있나요?
+**A**: 현재는 없습니다. 모든 API에 동일하게 접근 가능합니다.
+향후 프리미엄 기능을 추가할 경우, `user.is_anonymous` 필드로 구분할 수 있습니다.
 
 ---
 
 ## 참고 자료
 
-### Supabase 공식 문서
-- [Supabase Auth - Flutter](https://supabase.com/docs/guides/auth/quickstarts/flutter)
-- [Supabase Auth - Email/Password](https://supabase.com/docs/guides/auth/auth-email)
-- [Supabase Auth - OAuth](https://supabase.com/docs/guides/auth/social-login)
-- [Supabase RLS](https://supabase.com/docs/guides/auth/row-level-security)
-
-### 관련 문서
+- [Supabase Anonymous Sign-ins](https://supabase.com/docs/guides/auth/auth-anonymous)
+- [Supabase Flutter SDK](https://supabase.com/docs/reference/dart/introduction)
+- [Supabase Link Identity](https://supabase.com/docs/guides/auth/auth-identity-linking)
 - [API Reference](api-reference.md) - 전체 API 문서
 - [Flutter Integration Guide](flutter-integration-guide.md) - Flutter 통합 가이드
-- [README.md](../README.md) - 프로젝트 시작 가이드
 
 ---
 
 ## 요약
 
-1. **회원가입**: Supabase SDK로 클라이언트에서 처리
-2. **로그인**: Supabase SDK로 클라이언트에서 처리
-3. **Access Token**: 모든 API 요청에 포함 (Bearer Token)
-4. **Refresh Token**: Access Token 자동 갱신용
-5. **디바이스 관리**: 서버 API (`/users/devices`)
-6. **로그인 이력**: 서버 API (`/users/login`)
-7. **자동 갱신**: Supabase가 Token 자동 갱신 (1시간마다)
-8. **RLS**: 데이터베이스 레벨 보안 강화
+| 항목 | 내용 |
+|------|------|
+| 인증 방식 | Supabase Anonymous Auth (기기 기반) |
+| 사용자 입력 | 없음 (앱 실행 시 자동) |
+| Token 관리 | Supabase SDK 자동 처리 |
+| 서버 변경 | 불필요 |
+| 데이터 보호 | RLS (Row Level Security) |
+| 향후 계획 | Google 계정 연동 (데이터 이전 지원) |

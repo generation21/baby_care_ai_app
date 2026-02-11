@@ -1,140 +1,117 @@
-import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/auth_service.dart';
 import '../clients/api_client.dart';
-import '../clients/api_client.dart' as api;
+import '../clients/baby_care_api.dart';
+import '../services/auth_service.dart';
+import '../services/device_service.dart';
 
-/// 인증 상태를 관리하는 ChangeNotifier
-/// 
-/// Provider 패턴을 사용하여 앱 전체에서 인증 상태를 공유합니다.
+/// 인증 상태 관리
+///
+/// Supabase 익명 인증 후 백엔드 API(디바이스 등록, 로그인 이력)를 호출합니다.
 class AuthState extends ChangeNotifier {
   final AuthService _authService = AuthService();
-  final ApiClient _apiClient = ApiClient();
-  User? _user;
+  final DeviceService _deviceService = DeviceService();
+  late final ApiClient _apiClient = ApiClient(_authService);
+  late final BabyCareApi _babyCareApi = BabyCareApi(_apiClient);
+
   bool _isLoading = false;
   String? _errorMessage;
+  String? _deviceId;
+  Map<String, dynamic>? _deviceInfo;
+  final Completer<void> _authCompleter = Completer<void>();
 
-  /// 현재 사용자 정보
-  User? get user => _user;
+  /// 인증 초기화가 완료될 때까지 대기 (성공/실패 모두)
+  Future<void> get authReady => _authCompleter.future;
 
-  /// 로딩 상태
   bool get isLoading => _isLoading;
-
-  /// 에러 메시지
   String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _authService.isAuthenticated;
+  String? get userId => _authService.userId;
+  String? get deviceId => _deviceId;
+  Map<String, dynamic>? get deviceInfo => _deviceInfo;
 
-  /// 인증 상태
-  bool get isAuthenticated => _user != null;
+  ApiClient get apiClient => _apiClient;
+  BabyCareApi get babyCareApi => _babyCareApi;
 
   AuthState() {
     _initializeAuth();
   }
 
-  /// 인증 상태 초기화
-  void _initializeAuth() {
-    _user = _authService.currentUser;
-    notifyListeners();
-
-    // 인증 상태 변경 감지
-    _authService.authStateChanges.listen((authState) {
-      _user = authState.session?.user;
-      notifyListeners();
-    });
+  Future<void> _initializeAuth() async {
+    await autoSignIn();
   }
 
-  /// 이메일과 비밀번호로 회원가입
-  Future<bool> signUp({
-    required String email,
-    required String password,
-    Map<String, dynamic>? metadata,
-  }) async {
+  /// 익명 로그인 후 디바이스 등록 및 로그인 이력 기록
+  Future<bool> autoSignIn() async {
+    debugPrint('[AuthState] autoSignIn 시작');
     _setLoading(true);
     _clearError();
 
     try {
-      // 1. Supabase 회원가입
-      final response = await _authService.signUp(
-        email: email,
-        password: password,
-        metadata: metadata,
-      );
+      debugPrint('[AuthState] 디바이스 ID 가져오기...');
+      _deviceId = await _deviceService.getDeviceId();
+      _deviceInfo = await _deviceService.getDeviceInfo();
+      debugPrint('[AuthState] 디바이스 ID: $_deviceId');
 
-      if (response.user == null) {
-        throw AppAuthException('회원가입에 실패했습니다.');
-      }
+      debugPrint('[AuthState] Supabase 익명 로그인 시작...');
+      await _authService.autoSignIn();
+      debugPrint('[AuthState] Supabase 익명 로그인 완료. isAuthenticated: ${_authService.isAuthenticated}');
 
-      _user = response.user;
-
-      // 2. 세션이 있으면 서버 API 호출 (이메일 확인이 필요 없는 경우)
-      if (response.session != null) {
+      if (_authService.isAuthenticated) {
+        debugPrint('[AuthState] 백엔드 API 호출 시작...');
         await _registerDeviceAndRecordLogin();
+        debugPrint('[AuthState] 백엔드 API 호출 완료');
       }
 
       _setLoading(false);
+      if (!_authCompleter.isCompleted) _authCompleter.complete();
       notifyListeners();
+      debugPrint('[AuthState] autoSignIn 완료 (성공)');
       return true;
     } on AppAuthException catch (e) {
+      debugPrint('[AuthState] autoSignIn 실패 (AppAuthException): ${e.message}');
       _setError(e.message);
       _setLoading(false);
+      if (!_authCompleter.isCompleted) _authCompleter.complete();
       notifyListeners();
       return false;
     } catch (e) {
-      _setError('회원가입 중 예상치 못한 오류가 발생했습니다.');
+      debugPrint('[AuthState] autoSignIn 실패 (Exception): $e');
+      _setError('자동 로그인 중 오류가 발생했습니다: ${e.toString()}');
       _setLoading(false);
+      if (!_authCompleter.isCompleted) _authCompleter.complete();
       notifyListeners();
       return false;
     }
   }
 
-  /// 이메일과 비밀번호로 로그인
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
-    _setLoading(true);
-    _clearError();
-
+  /// 디바이스 등록 + 로그인 이력 기록 (백엔드 API)
+  Future<void> _registerDeviceAndRecordLogin() async {
     try {
-      // 1. Supabase 로그인
-      final response = await _authService.signIn(
-        email: email,
-        password: password,
+      debugPrint('[API] POST /api/v1/users/devices 호출...');
+      await _apiClient.registerDevice(
+        deviceToken: _deviceId!,
+        platform: _authService.platform,
+        appId: AuthService.appId,
       );
+      debugPrint('[API] 디바이스 등록 완료');
 
-      if (response.user == null) {
-        throw AppAuthException('로그인에 실패했습니다.');
-      }
-
-      _user = response.user;
-
-      // 2. 로그인 이력 기록 (서버 API)
-      await _recordLogin();
-
-      _setLoading(false);
-      notifyListeners();
-      return true;
-    } on AppAuthException catch (e) {
-      _setError(e.message);
-      _setLoading(false);
-      notifyListeners();
-      return false;
+      debugPrint('[API] POST /api/v1/users/login 호출...');
+      await _apiClient.recordLogin(
+        deviceToken: _deviceId!,
+        appId: AuthService.appId,
+      );
+      debugPrint('[API] 로그인 이력 기록 완료');
     } catch (e) {
-      _setError('로그인 중 예상치 못한 오류가 발생했습니다.');
-      _setLoading(false);
-      notifyListeners();
-      return false;
+      debugPrint('[API] 디바이스 등록/로그인 이력 기록 실패 (무시): $e');
     }
   }
 
-  /// 로그아웃
   Future<void> signOut() async {
     _setLoading(true);
     _clearError();
-
     try {
       await _authService.signOut();
-      _user = null;
       _setLoading(false);
       notifyListeners();
     } on AppAuthException catch (e) {
@@ -142,115 +119,26 @@ class AuthState extends ChangeNotifier {
       _setLoading(false);
       notifyListeners();
     } catch (e) {
-      _setError('로그아웃 중 예상치 못한 오류가 발생했습니다.');
+      _setError('로그아웃 중 오류가 발생했습니다.');
       _setLoading(false);
       notifyListeners();
     }
   }
 
-  /// 비밀번호 재설정 이메일 전송
-  Future<bool> resetPassword(String email) async {
-    _setLoading(true);
-    _clearError();
-
+  Future<void> refreshToken() async {
     try {
-      await _authService.resetPassword(email);
-      _setLoading(false);
+      await _authService.refreshToken();
       notifyListeners();
-      return true;
-    } on AppAuthException catch (e) {
-      _setError(e.message);
-      _setLoading(false);
-      notifyListeners();
-      return false;
     } catch (e) {
-      _setError('비밀번호 재설정 이메일 전송 중 오류가 발생했습니다.');
-      _setLoading(false);
-      notifyListeners();
-      return false;
+      debugPrint('토큰 갱신 실패: $e');
     }
   }
 
-  /// 세션 새로고침
-  Future<void> refreshSession() async {
-    final session = await _authService.refreshSession();
-    if (session != null) {
-      _user = session.user;
-      notifyListeners();
-    }
-  }
-
-  /// 로딩 상태 설정
-  void _setLoading(bool value) {
-    _isLoading = value;
-  }
-
-  /// 에러 메시지 설정
-  void _setError(String message) {
-    _errorMessage = message;
-  }
-
-  /// 에러 메시지 초기화
-  void _clearError() {
-    _errorMessage = null;
-  }
-
-  /// 에러 메시지 수동 초기화 (외부에서 호출 가능)
+  void _setLoading(bool value) => _isLoading = value;
+  void _setError(String message) => _errorMessage = message;
+  void _clearError() => _errorMessage = null;
   void clearError() {
     _clearError();
     notifyListeners();
-  }
-
-  /// 디바이스 등록 및 로그인 이력 기록 (회원가입 후)
-  Future<void> _registerDeviceAndRecordLogin() async {
-    try {
-      // 디바이스 토큰 가져오기 (현재는 임시로 빈 문자열 사용)
-      // TODO: 푸시 알림 토큰을 실제로 가져오도록 구현 필요
-      final deviceToken = '';
-      
-      if (deviceToken.isEmpty) {
-        // 디바이스 토큰이 없으면 스킵 (선택적 기능)
-        return;
-      }
-
-      // 디바이스 등록
-      await _apiClient.registerDevice(
-        deviceToken: deviceToken,
-        platform: api.PlatformInfo.platform,
-        appId: api.PlatformInfo.appId,
-      );
-
-      // 로그인 이력 기록
-      await _apiClient.recordLogin(
-        deviceToken: deviceToken,
-        appId: api.PlatformInfo.appId,
-      );
-    } catch (e) {
-      // 디바이스 등록 실패는 무시 (선택적 기능)
-      debugPrint('디바이스 등록 실패: $e');
-    }
-  }
-
-  /// 로그인 이력 기록 (로그인 후)
-  Future<void> _recordLogin() async {
-    try {
-      // 디바이스 토큰 가져오기 (현재는 임시로 빈 문자열 사용)
-      // TODO: 푸시 알림 토큰을 실제로 가져오도록 구현 필요
-      final deviceToken = '';
-      
-      if (deviceToken.isEmpty) {
-        // 디바이스 토큰이 없으면 스킵 (선택적 기능)
-        return;
-      }
-
-      // 로그인 이력 기록
-      await _apiClient.recordLogin(
-        deviceToken: deviceToken,
-        appId: api.PlatformInfo.appId,
-      );
-    } catch (e) {
-      // 로그인 이력 기록 실패는 무시 (선택적 기능)
-      debugPrint('로그인 이력 기록 실패: $e');
-    }
   }
 }

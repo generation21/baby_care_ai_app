@@ -16,23 +16,28 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthAndNavigate();
+    _initializeAndNavigate();
   }
 
-  Future<void> _checkAuthAndNavigate() async {
-    // 스플래시 화면 표시 시간
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _initializeAndNavigate() async {
+    debugPrint('[Splash] 스플래시 화면 시작');
+    final authState = context.read<AuthState>();
 
+    // 스플래시 최소 2초 표시 + 인증 완료를 동시에 대기 (인증 최대 10초)
+    debugPrint('[Splash] 인증 대기 중...');
+    await Future.wait([
+      Future.delayed(const Duration(seconds: 2)),
+      Future.any([
+        authState.authReady,
+        Future.delayed(const Duration(seconds: 10)),
+      ]),
+    ]);
+
+    debugPrint('[Splash] 인증 완료. 대시보드로 이동...');
     if (!mounted) return;
 
-    final authState = context.read<AuthState>();
-    
-    // 인증 상태 확인 후 적절한 화면으로 이동
-    if (authState.isAuthenticated) {
-      context.go('/dashboard');
-    } else {
-      context.go('/login');
-    }
+    context.go('/dashboard');
+    debugPrint('[Splash] 대시보드 이동 완료');
   }
 
   @override
