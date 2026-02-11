@@ -84,4 +84,11 @@ class AppTextStyles {
     height: 1.4,
     letterSpacing: 0.5,
   );
+
+  // Material 3 style aliases
+  static const TextStyle headlineLarge = headline1;
+  static const TextStyle headlineSmall = headline2;
+  static const TextStyle bodyLarge = body1;
+  static const TextStyle bodyMedium = body2;
+  static const TextStyle bodySmall = captionSmall;
 }
