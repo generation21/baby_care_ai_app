@@ -6,6 +6,7 @@ import '../screens/ai_chat_screen.dart';
 import '../screens/babies_screen.dart';
 import '../screens/baby_detail_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/feeding/feeding_timer_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
@@ -112,6 +113,16 @@ class AppRouter {
           path: '/ai-chat',
           name: 'ai-chat',
           builder: (context, state) => const AIChatScreen(),
+        ),
+        
+        // 수유 타이머
+        GoRoute(
+          path: '/feeding-timer/:babyId',
+          name: 'feeding-timer',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return FeedingTimerScreen(babyId: babyId);
+          },
         ),
       ],
     );

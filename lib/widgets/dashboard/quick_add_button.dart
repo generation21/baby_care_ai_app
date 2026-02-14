@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
 import '../../screens/quick_add/quick_add_modal.dart';
 
 /// 빠른 기록 추가 플로팅 버튼

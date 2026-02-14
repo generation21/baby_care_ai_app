@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../utils/time_utils.dart';
@@ -8,6 +9,7 @@ import '../../utils/time_utils.dart';
 /// 
 /// 현재 진행 중인 수유를 실시간으로 표시합니다.
 class ActiveFeedingTimer extends StatefulWidget {
+  final int babyId;
   final DateTime? startTime;
   final String? currentSide; // 'left' or 'right'
   final int? leftDurationSeconds;
@@ -17,6 +19,7 @@ class ActiveFeedingTimer extends StatefulWidget {
 
   const ActiveFeedingTimer({
     super.key,
+    required this.babyId,
     this.startTime,
     this.currentSide,
     this.leftDurationSeconds,
@@ -87,6 +90,22 @@ class _ActiveFeedingTimerState extends State<ActiveFeedingTimer> {
               '진행 중인 수유가 없습니다',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                context.push('/feeding-timer/${widget.babyId}');
+              },
+              icon: const Icon(Icons.timer, size: 18),
+              label: const Text('타이머 시작'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],
@@ -175,42 +194,21 @@ class _ActiveFeedingTimerState extends State<ActiveFeedingTimer> {
             ],
           ),
           const SizedBox(height: 16),
-          // 버튼들
-          Row(
-            children: [
-              if (widget.onSwitchSide != null)
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: widget.onSwitchSide,
-                    icon: Icon(Icons.swap_horiz, size: 18),
-                    label: Text('전환'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: BorderSide(color: AppColors.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              if (widget.onSwitchSide != null && widget.onStop != null)
-                const SizedBox(width: 12),
-              if (widget.onStop != null)
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: widget.onStop,
-                    icon: Icon(Icons.stop, size: 18),
-                    label: Text('종료'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          // 버튼 - 타이머 화면으로 이동
+          ElevatedButton.icon(
+            onPressed: () {
+              context.push('/feeding-timer/${widget.babyId}');
+            },
+            icon: const Icon(Icons.fullscreen, size: 18),
+            label: const Text('타이머 열기'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 44),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
         ],
       ),

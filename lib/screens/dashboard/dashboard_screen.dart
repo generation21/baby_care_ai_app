@@ -221,6 +221,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 12),
             ActiveFeedingTimer(
+              babyId: _dashboard!.babyInfo.id,
               startTime: _dashboard!.activeFeedingTimer.isActive && 
                          _dashboard!.activeFeedingTimer.startTime != null
                   ? DateTime.parse(_dashboard!.activeFeedingTimer.startTime!)
@@ -228,12 +229,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               currentSide: _dashboard!.activeFeedingTimer.currentSide,
               leftDurationSeconds: _dashboard!.activeFeedingTimer.leftDurationSeconds,
               rightDurationSeconds: _dashboard!.activeFeedingTimer.rightDurationSeconds,
-              onStop: () {
-                // TODO: 타이머 종료
-              },
-              onSwitchSide: () {
-                // TODO: 좌우 전환
-              },
             ),
             const SizedBox(height: 24),
 
