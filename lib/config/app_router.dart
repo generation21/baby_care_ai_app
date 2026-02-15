@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../screens/ai_chat_screen.dart';
 import '../screens/baby/add_baby_screen.dart';
 import '../screens/baby/baby_detail_screen.dart';
 import '../screens/baby/baby_list_screen.dart';
@@ -16,6 +15,9 @@ import '../screens/feeding/edit_feeding_screen.dart';
 import '../screens/feeding/feeding_detail_screen.dart';
 import '../screens/feeding/feeding_list_screen.dart';
 import '../screens/feeding/feeding_timer_screen.dart';
+import '../screens/gpt/gpt_conversation_detail_screen.dart';
+import '../screens/gpt/gpt_conversation_list_screen.dart';
+import '../screens/gpt/gpt_question_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/sleep/sleep_tracker_screen.dart';
 import '../screens/splash_screen.dart';
@@ -139,7 +141,31 @@ class AppRouter {
         GoRoute(
           path: '/ai-chat',
           name: 'ai-chat',
-          builder: (context, state) => const AIChatScreen(),
+          builder: (context, state) => const GPTQuestionScreen(),
+        ),
+
+        // GPT 대화 목록
+        GoRoute(
+          path: '/gpt/:babyId/conversations',
+          name: 'gpt-conversation-list',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return GPTConversationListScreen(babyId: babyId);
+          },
+        ),
+
+        // GPT 대화 상세
+        GoRoute(
+          path: '/gpt/:babyId/conversations/:conversationId',
+          name: 'gpt-conversation-detail',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final conversationId = int.parse(state.pathParameters['conversationId']!);
+            return GPTConversationDetailScreen(
+              babyId: babyId,
+              conversationId: conversationId,
+            );
+          },
         ),
         
         // 수유 타이머
