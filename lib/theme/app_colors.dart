@@ -45,4 +45,12 @@ class AppColors {
   static const Color border = Color(0xFFE0E0E0);
   static const Color borderLight = Color(0xFFF0F0F0);
   static const Color borderStrong = Color(0xFFBDBDBD);
+
+  // Dark palette
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkSurfaceSecondary = Color(0xFF252525);
+  static const Color darkTextPrimary = Color(0xFFF5F5F5);
+  static const Color darkTextSecondary = Color(0xFFB0B0B0);
+  static const Color darkBorder = Color(0xFF2D2D2D);
 }

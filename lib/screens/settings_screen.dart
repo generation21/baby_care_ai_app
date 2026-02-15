@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../states/auth_state.dart';
+import '../states/theme_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_bar_widget.dart';
@@ -15,6 +16,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
+    final themeState = context.watch<ThemeState>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -115,6 +117,56 @@ class SettingsScreen extends StatelessWidget {
                             );
                           },
                           activeTrackColor: AppColors.primary,
+                        ),
+                        onTap: null,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 테마 설정 섹션
+                  _SectionHeader(title: '테마'),
+                  const SizedBox(height: 8),
+                  _SettingsCard(
+                    children: [
+                      _SettingsItem(
+                        icon: Icons.brightness_auto_outlined,
+                        title: '시스템 설정 따라가기',
+                        trailing: Switch(
+                          value: themeState.followSystem,
+                          onChanged: (value) {
+                            context.read<ThemeState>().setFollowSystem(value);
+                          },
+                        ),
+                        onTap: null,
+                      ),
+                      const Divider(height: 1),
+                      _SettingsItem(
+                        icon: Icons.brightness_6_outlined,
+                        title: '수동 테마 선택',
+                        subtitle: themeState.manualThemeMode == ThemeMode.dark
+                            ? '다크 모드'
+                            : '라이트 모드',
+                        trailing: DropdownButton<ThemeMode>(
+                          value: themeState.manualThemeMode,
+                          underline: const SizedBox.shrink(),
+                          items: const [
+                            DropdownMenuItem(
+                              value: ThemeMode.light,
+                              child: Text('라이트'),
+                            ),
+                            DropdownMenuItem(
+                              value: ThemeMode.dark,
+                              child: Text('다크'),
+                            ),
+                          ],
+                          onChanged: themeState.followSystem
+                              ? null
+                              : (value) {
+                                  if (value != null) {
+                                    context.read<ThemeState>().setManualThemeMode(value);
+                                  }
+                                },
                         ),
                         onTap: null,
                       ),

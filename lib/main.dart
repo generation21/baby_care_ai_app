@@ -17,6 +17,7 @@ import 'states/feeding_state.dart';
 import 'states/care_state.dart';
 import 'states/gpt_state.dart';
 import 'states/timer_state.dart';
+import 'states/theme_state.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -44,6 +45,9 @@ class BabyCareApp extends StatelessWidget {
         // AuthState - 인증 상태 (최우선)
         ChangeNotifierProvider(
           create: (_) => AuthState(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeState()..initialize(),
         ),
 
         // API 클라이언트 및 서비스 - AuthState에 의존
@@ -112,21 +116,27 @@ class BabyCareApp extends StatelessWidget {
               previous ?? TimerState(apiService),
         ),
       ],
-      child: MaterialApp.router(
-        title: 'Baby Care AI',
-        theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.createRouter(context),
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('ko', 'KR'),
-          Locale('en', 'US'),
-        ],
-        locale: const Locale('ko', 'KR'),
+      child: Consumer<ThemeState>(
+        builder: (context, themeState, _) {
+          return MaterialApp.router(
+            title: 'Baby Care AI',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeState.themeMode,
+            routerConfig: AppRouter.createRouter(context),
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('ko', 'KR'),
+              Locale('en', 'US'),
+            ],
+            locale: const Locale('ko', 'KR'),
+          );
+        },
       ),
     );
   }
