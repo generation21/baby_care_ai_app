@@ -18,16 +18,17 @@ import '../screens/feeding/feeding_timer_screen.dart';
 import '../screens/gpt/gpt_conversation_detail_screen.dart';
 import '../screens/gpt/gpt_conversation_list_screen.dart';
 import '../screens/gpt/gpt_question_screen.dart';
-import '../screens/settings_screen.dart';
+import '../screens/settings/profile_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/sleep/sleep_tracker_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
 
 /// 앱 라우터 설정
-/// 
+///
 /// GoRouter를 사용한 라우팅 관리
 /// 디바이스 기반 자동 인증을 사용하므로 로그인/회원가입 화면이 없습니다.
-/// 
+///
 /// ## 라우트 목록
 /// - `/` : 홈 (자동으로 대시보드로 리다이렉트)
 /// - `/splash` : 스플래시 화면
@@ -37,7 +38,7 @@ import '../states/auth_state.dart';
 /// - `/settings` : 설정
 /// - `/add-child` : 아기 추가
 /// - `/ai-chat` : AI 채팅
-/// 
+///
 /// ## 인증 리다이렉트 로직
 /// - 인증되지 않은 사용자: `/splash`로 리다이렉트
 /// - 인증된 사용자가 `/` 접근: `/dashboard`로 리다이렉트
@@ -74,28 +75,28 @@ class AppRouter {
           name: 'home',
           redirect: (context, state) => '/dashboard',
         ),
-        
+
         // 스플래시 화면
         GoRoute(
           path: '/splash',
           name: 'splash',
           builder: (context, state) => const SplashScreen(),
         ),
-        
+
         // 대시보드 (메인 화면)
         GoRoute(
           path: '/dashboard',
           name: 'dashboard',
           builder: (context, state) => const DashboardScreen(),
         ),
-        
+
         // 아기 목록
         GoRoute(
           path: '/babies',
           name: 'babies',
           builder: (context, state) => const BabyListScreen(),
         ),
-        
+
         // 아기 상세 (파라미터: id)
         GoRoute(
           path: '/baby/:id',
@@ -115,14 +116,21 @@ class AppRouter {
             return EditBabyScreen(babyId: babyId);
           },
         ),
-        
+
         // 설정
         GoRoute(
           path: '/settings',
           name: 'settings',
           builder: (context, state) => const SettingsScreen(),
         ),
-        
+
+        // 프로필 설정
+        GoRoute(
+          path: '/settings/profile',
+          name: 'profile-settings',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+
         // 아기 추가
         GoRoute(
           path: '/add-child',
@@ -136,7 +144,7 @@ class AppRouter {
           name: 'baby-add',
           builder: (context, state) => const AddBabyScreen(),
         ),
-        
+
         // AI 채팅
         GoRoute(
           path: '/ai-chat',
@@ -160,14 +168,16 @@ class AppRouter {
           name: 'gpt-conversation-detail',
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
-            final conversationId = int.parse(state.pathParameters['conversationId']!);
+            final conversationId = int.parse(
+              state.pathParameters['conversationId']!,
+            );
             return GPTConversationDetailScreen(
               babyId: babyId,
               conversationId: conversationId,
             );
           },
         ),
-        
+
         // 수유 타이머
         GoRoute(
           path: '/feeding-timer/:babyId',
@@ -205,10 +215,7 @@ class AppRouter {
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
             final recordId = int.parse(state.pathParameters['recordId']!);
-            return FeedingDetailScreen(
-              babyId: babyId,
-              recordId: recordId,
-            );
+            return FeedingDetailScreen(babyId: babyId, recordId: recordId);
           },
         ),
 
@@ -219,10 +226,7 @@ class AppRouter {
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
             final recordId = int.parse(state.pathParameters['recordId']!);
-            return EditFeedingScreen(
-              babyId: babyId,
-              recordId: recordId,
-            );
+            return EditFeedingScreen(babyId: babyId, recordId: recordId);
           },
         ),
 
@@ -257,10 +261,7 @@ class AppRouter {
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
             final recordId = int.parse(state.pathParameters['recordId']!);
-            return CareDetailScreen(
-              babyId: babyId,
-              recordId: recordId,
-            );
+            return CareDetailScreen(babyId: babyId, recordId: recordId);
           },
         ),
 
@@ -271,10 +272,7 @@ class AppRouter {
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
             final recordId = int.parse(state.pathParameters['recordId']!);
-            return EditCareScreen(
-              babyId: babyId,
-              recordId: recordId,
-            );
+            return EditCareScreen(babyId: babyId, recordId: recordId);
           },
         ),
 

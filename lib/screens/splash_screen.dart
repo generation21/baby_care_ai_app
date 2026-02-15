@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../services/permission_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../states/auth_state.dart';
@@ -13,6 +14,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  static const Duration _minimumSplashDuration = Duration(seconds: 2);
+  static const Duration _maximumAuthWaitDuration = Duration(seconds: 10);
+
+  final PermissionService _permissionService = PermissionService();
+
   @override
   void initState() {
     super.initState();
@@ -22,15 +28,18 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _initializeAndNavigate() async {
     debugPrint('[Splash] 스플래시 화면 시작');
     final authState = context.read<AuthState>();
+    final essentialPermissionFuture = _permissionService
+        .requestEssentialPermissions();
 
     // 스플래시 최소 2초 표시 + 인증 완료를 동시에 대기 (인증 최대 10초)
     debugPrint('[Splash] 인증 대기 중...');
     await Future.wait([
-      Future.delayed(const Duration(seconds: 2)),
+      Future.delayed(_minimumSplashDuration),
       Future.any([
         authState.authReady,
-        Future.delayed(const Duration(seconds: 10)),
+        Future.delayed(_maximumAuthWaitDuration),
       ]),
+      essentialPermissionFuture,
     ]);
 
     debugPrint('[Splash] 인증 완료. 대시보드로 이동...');
@@ -58,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   borderRadius: BorderRadius.circular(60),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
+                      color: Colors.black.withValues(alpha: 0.12),
                       offset: const Offset(0, 8),
                       blurRadius: 24,
                     ),
@@ -71,29 +80,27 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Branding Text
               Column(
                 children: [
                   Text(
                     'Baby Care',
-                    style: AppTextStyles.display.copyWith(
-                      color: Colors.white,
-                    ),
+                    style: AppTextStyles.display.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Track, Care, Connect',
                     style: AppTextStyles.body2.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       letterSpacing: 2,
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Loading Section
               Column(
                 children: [
@@ -102,8 +109,10 @@ class _SplashScreenState extends State<SplashScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: LinearProgressIndicator(
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        backgroundColor: Colors.white.withValues(alpha: 0.3),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
                         minHeight: 4,
                       ),
                     ),
@@ -112,28 +121,28 @@ class _SplashScreenState extends State<SplashScreen> {
                   Text(
                     'Loading...',
                     style: AppTextStyles.caption.copyWith(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 120),
-              
+
               // Version Info
               Column(
                 children: [
                   Text(
                     'Version 1.0.0',
                     style: AppTextStyles.overline.copyWith(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '© 2026 Baby Care AI',
                     style: AppTextStyles.overline.copyWith(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
