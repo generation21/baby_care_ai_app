@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../models/baby.dart';
@@ -11,10 +12,7 @@ import '../../widgets/app_bar_widget.dart';
 class BabyDetailScreen extends StatefulWidget {
   final int babyId;
 
-  const BabyDetailScreen({
-    super.key,
-    required this.babyId,
-  });
+  const BabyDetailScreen({super.key, required this.babyId});
 
   @override
   State<BabyDetailScreen> createState() => _BabyDetailScreenState();
@@ -76,7 +74,8 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
     }
     final babyState = context.read<BabyState>();
 
-    final shouldDelete = await showDialog<bool>(
+    final shouldDelete =
+        await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('아이 프로필 삭제'),
@@ -90,9 +89,7 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                ),
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
                 child: const Text('삭제'),
               ),
             ],
@@ -113,17 +110,17 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('아이 프로필이 삭제되었습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('아이 프로필이 삭제되었습니다.')));
       context.go('/babies');
     } catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('삭제에 실패했습니다: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('삭제에 실패했습니다: $error')));
     } finally {
       if (mounted) {
         setState(() {
@@ -149,12 +146,16 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
               actions: [
                 IconButton(
                   tooltip: '수정',
-                  onPressed: _isLoading || _baby == null ? null : _moveToEditScreen,
+                  onPressed: _isLoading || _baby == null
+                      ? null
+                      : _moveToEditScreen,
                   icon: const Icon(Icons.edit_outlined),
                 ),
                 IconButton(
                   tooltip: '삭제',
-                  onPressed: _isLoading || _baby == null ? null : _confirmAndDelete,
+                  onPressed: _isLoading || _baby == null
+                      ? null
+                      : _confirmAndDelete,
                   icon: const Icon(Icons.delete_outline),
                   color: AppColors.error,
                 ),
@@ -183,7 +184,9 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
               const SizedBox(height: 16),
               Text(
                 _errorMessage ?? '아이 정보를 찾을 수 없습니다.',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.error,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -255,7 +258,9 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
           const SizedBox(height: 12),
           Text(
             baby.name,
-            style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.w700),
+            style: AppTextStyles.headlineSmall.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -282,10 +287,17 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
           ? const Icon(Icons.child_care, size: 48, color: AppColors.primary)
           : ClipRRect(
               borderRadius: BorderRadius.circular(avatarSize / 2),
-              child: Image.network(
-                photoUrl,
+              child: CachedNetworkImage(
+                imageUrl: photoUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
+                placeholder: (_, __) => const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => const Icon(
                   Icons.child_care,
                   size: 48,
                   color: AppColors.primary,

@@ -4,11 +4,12 @@ import '../models/care_record.dart';
 import '../utils/api_exception.dart';
 
 /// Care API 서비스
-/// 
+///
 /// 육아 기록(기저귀, 수면, 목욕, 약, 체온 등) CRUD 기능을 제공합니다.
 class CareApiService {
   final ApiClient _apiClient;
   static const String _basePath = '/api/v1/baby-care-ai/babies';
+  static const Duration _defaultCacheTtl = Duration(minutes: 5);
 
   CareApiService(this._apiClient);
 
@@ -23,17 +24,15 @@ class CareApiService {
     int offset = 0,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'limit': limit,
-        'offset': offset,
-      };
+      final queryParams = <String, dynamic>{'limit': limit, 'offset': offset};
       if (recordType != null) queryParams['record_type'] = recordType;
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/care-records',
         queryParameters: queryParams,
+        cacheTtl: _defaultCacheTtl,
       );
 
       return (response.data as List)
@@ -48,8 +47,9 @@ class CareApiService {
   /// GET /api/v1/baby-care-ai/babies/{baby_id}/care-records/{record_id}
   Future<CareRecord> getCareRecord(int babyId, int recordId) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/care-records/$recordId',
+        cacheTtl: _defaultCacheTtl,
       );
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
@@ -93,6 +93,7 @@ class CareApiService {
         '$_basePath/$babyId/care-records',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -137,6 +138,7 @@ class CareApiService {
         '$_basePath/$babyId/care-records/$recordId',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -148,9 +150,8 @@ class CareApiService {
   /// DELETE /api/v1/baby-care-ai/babies/{baby_id}/care-records/{record_id}
   Future<void> deleteCareRecord(int babyId, int recordId) async {
     try {
-      await _apiClient.dio.delete(
-        '$_basePath/$babyId/care-records/$recordId',
-      );
+      await _apiClient.dio.delete('$_basePath/$babyId/care-records/$recordId');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }

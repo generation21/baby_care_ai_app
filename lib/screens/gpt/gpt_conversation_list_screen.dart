@@ -10,17 +10,16 @@ import '../../widgets/gpt/conversation_card.dart';
 class GPTConversationListScreen extends StatefulWidget {
   final int babyId;
 
-  const GPTConversationListScreen({
-    super.key,
-    required this.babyId,
-  });
+  const GPTConversationListScreen({super.key, required this.babyId});
 
   @override
-  State<GPTConversationListScreen> createState() => _GPTConversationListScreenState();
+  State<GPTConversationListScreen> createState() =>
+      _GPTConversationListScreenState();
 }
 
 class _GPTConversationListScreenState extends State<GPTConversationListScreen> {
   static const double _paginationTriggerOffset = 240;
+  static const double _listCacheExtent = 800;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -81,7 +80,8 @@ class _GPTConversationListScreenState extends State<GPTConversationListScreen> {
                   if (gptState.isLoading && gptState.conversations.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (gptState.errorMessage != null && gptState.conversations.isEmpty) {
+                  if (gptState.errorMessage != null &&
+                      gptState.conversations.isEmpty) {
                     return _buildErrorState(gptState.errorMessage!);
                   }
                   if (gptState.conversations.isEmpty) {
@@ -92,6 +92,7 @@ class _GPTConversationListScreenState extends State<GPTConversationListScreen> {
                     onRefresh: _loadConversations,
                     child: ListView.builder(
                       controller: _scrollController,
+                      cacheExtent: _listCacheExtent,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       itemCount: gptState.conversations.length + 1,
                       itemBuilder: (context, index) {
@@ -149,16 +150,24 @@ class _GPTConversationListScreenState extends State<GPTConversationListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.chat_bubble_outline, size: 72, color: AppColors.textSecondary),
+            const Icon(
+              Icons.chat_bubble_outline,
+              size: 72,
+              color: AppColors.textSecondary,
+            ),
             const SizedBox(height: 16),
             Text(
               'GPT 대화 기록이 없습니다',
-              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               '질문을 보내면 대화 기록이 여기에 쌓입니다.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -180,7 +189,9 @@ class _GPTConversationListScreenState extends State<GPTConversationListScreen> {
         child: Center(
           child: Text(
             '모든 대화 기록을 불러왔습니다.',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
           ),
         ),
       );

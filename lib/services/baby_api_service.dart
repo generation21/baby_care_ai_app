@@ -2,30 +2,30 @@ import 'package:dio/dio.dart';
 import '../clients/api_client.dart';
 import '../models/baby.dart';
 import '../models/dashboard.dart';
+import '../services/logging_service.dart';
 import '../utils/api_exception.dart';
 
 /// Baby API 서비스
-/// 
+///
 /// Baby 프로필 CRUD 및 대시보드 조회 기능을 제공합니다.
 class BabyApiService {
   final ApiClient _apiClient;
   static const String _basePath = '/api/v1/baby-care-ai/babies';
+  static const Duration _defaultCacheTtl = Duration(minutes: 5);
+  static const Duration _dashboardCacheTtl = Duration(minutes: 1);
+  static const int _dashboardTargetResponseMs = 300;
+  final LoggingService _loggingService = LoggingService.instance;
 
   BabyApiService(this._apiClient);
 
   /// 아이 목록 조회
   /// GET /api/v1/baby-care-ai/babies
-  Future<List<Baby>> getBabies({
-    int limit = 50,
-    int offset = 0,
-  }) async {
+  Future<List<Baby>> getBabies({int limit = 50, int offset = 0}) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         _basePath,
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'limit': limit, 'offset': offset},
+        cacheTtl: _defaultCacheTtl,
       );
 
       return (response.data as List)
@@ -40,7 +40,10 @@ class BabyApiService {
   /// GET /api/v1/baby-care-ai/babies/{baby_id}
   Future<Baby> getBaby(int babyId) async {
     try {
-      final response = await _apiClient.dio.get('$_basePath/$babyId');
+      final response = await _apiClient.get(
+        '$_basePath/$babyId',
+        cacheTtl: _defaultCacheTtl,
+      );
       return Baby.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -69,6 +72,8 @@ class BabyApiService {
           if (notes != null) 'notes': notes,
         },
       );
+
+      _apiClient.invalidateCacheByPrefix(_basePath);
 
       return Baby.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -103,6 +108,8 @@ class BabyApiService {
         data: data,
       );
 
+      _apiClient.invalidateCacheByPrefix(_basePath);
+
       return Baby.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -114,6 +121,7 @@ class BabyApiService {
   Future<void> deleteBaby(int babyId) async {
     try {
       await _apiClient.dio.delete('$_basePath/$babyId');
+      _apiClient.invalidateCacheByPrefix(_basePath);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }
@@ -122,13 +130,31 @@ class BabyApiService {
   /// 대시보드 조회
   /// GET /api/v1/baby-care-ai/babies/{baby_id}/dashboard
   Future<Dashboard> getDashboard(int babyId) async {
+    final stopwatch = Stopwatch()..start();
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/dashboard',
+        cacheTtl: _dashboardCacheTtl,
       );
 
+      stopwatch.stop();
+      final elapsedMs = stopwatch.elapsedMilliseconds;
+      if (elapsedMs > _dashboardTargetResponseMs) {
+        _loggingService.warning(
+          '대시보드 응답 지연(${elapsedMs}ms): babyId=$babyId',
+          tag: 'PERF',
+        );
+      } else {
+        _loggingService.info(
+          '대시보드 응답(${elapsedMs}ms): babyId=$babyId',
+          tag: 'PERF',
+        );
+      }
       return Dashboard.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
+      if (stopwatch.isRunning) {
+        stopwatch.stop();
+      }
       throw ApiException.fromDioException(e);
     }
   }

@@ -4,11 +4,12 @@ import '../models/gpt_conversation.dart';
 import '../utils/api_exception.dart';
 
 /// GPT API 서비스
-/// 
+///
 /// GPT 질문 및 대화 기록 조회 기능을 제공합니다.
 class GPTApiService {
   final ApiClient _apiClient;
   static const String _basePath = '/api/v1/baby-care-ai/babies';
+  static const Duration _defaultCacheTtl = Duration(minutes: 5);
 
   GPTApiService(this._apiClient);
 
@@ -22,15 +23,14 @@ class GPTApiService {
     try {
       final response = await _apiClient.dio.post(
         '$_basePath/$babyId/gpt-questions',
-        data: {
-          'question': question,
-          'context_days': contextDays,
-        },
+        data: {'question': question, 'context_days': contextDays},
       );
+      _apiClient.invalidateCacheByPrefix(
+        '$_basePath/$babyId/gpt-conversations',
+      );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/gpt-questions');
 
-      return GPTConversation.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      return GPTConversation.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }
@@ -44,12 +44,10 @@ class GPTApiService {
     int offset = 0,
   }) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/gpt-conversations',
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'limit': limit, 'offset': offset},
+        cacheTtl: _defaultCacheTtl,
       );
 
       return (response.data as List)
@@ -67,13 +65,12 @@ class GPTApiService {
     int conversationId,
   ) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/gpt-conversations/$conversationId',
+        cacheTtl: _defaultCacheTtl,
       );
 
-      return GPTConversation.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      return GPTConversation.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }
@@ -85,6 +82,9 @@ class GPTApiService {
     try {
       await _apiClient.dio.delete(
         '$_basePath/$babyId/gpt-conversations/$conversationId',
+      );
+      _apiClient.invalidateCacheByPrefix(
+        '$_basePath/$babyId/gpt-conversations',
       );
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);

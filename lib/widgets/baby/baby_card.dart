@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/baby.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -13,11 +14,7 @@ class BabyCard extends StatelessWidget {
   final Baby baby;
   final VoidCallback onTap;
 
-  const BabyCard({
-    super.key,
-    required this.baby,
-    required this.onTap,
-  });
+  const BabyCard({super.key, required this.baby, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -70,10 +67,7 @@ class BabyCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textTertiary,
-                ),
+                const Icon(Icons.chevron_right, color: AppColors.textTertiary),
               ],
             ),
           ),
@@ -91,17 +85,20 @@ class BabyCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: baby.photo == null
-          ? const Icon(
-              Icons.child_care,
-              color: AppColors.primary,
-              size: 32,
-            )
+          ? const Icon(Icons.child_care, color: AppColors.primary, size: 32)
           : ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                baby.photo!,
+              child: CachedNetworkImage(
+                imageUrl: baby.photo!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
+                placeholder: (_, __) => const Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => const Icon(
                   Icons.child_care,
                   color: AppColors.primary,
                   size: 32,

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
+import '../services/api_cache_service.dart';
 import '../services/auth_service.dart';
 import '../services/logging_service.dart';
 import '../services/network_status_service.dart';
@@ -12,9 +13,11 @@ import '../services/network_status_service.dart';
 class ApiClient {
   static const String _retryCountKey = '__retry_count__';
   static const int _maxRetryAttempts = 2;
+  static const Duration _defaultCacheTtl = Duration(minutes: 5);
 
   late final Dio _dio;
   final AuthService _authService;
+  final ApiCacheService _apiCacheService = ApiCacheService.instance;
   final LoggingService _loggingService = LoggingService.instance;
   final NetworkStatusService _networkStatusService =
       NetworkStatusService.instance;
@@ -62,6 +65,39 @@ class ApiClient {
   }
 
   Dio get dio => _dio;
+
+  Future<Response<dynamic>> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    bool useCache = true,
+    bool forceRefresh = false,
+    Duration cacheTtl = _defaultCacheTtl,
+  }) async {
+    final cacheKey = _buildCacheKey(path, queryParameters);
+
+    if (useCache && !forceRefresh) {
+      final cachedResponse = _apiCacheService.get<dynamic>(cacheKey);
+      if (cachedResponse != null) {
+        return Response<dynamic>(
+          requestOptions: RequestOptions(path: path),
+          data: cachedResponse,
+          statusCode: 200,
+        );
+      }
+    }
+
+    final response = await _dio.get(path, queryParameters: queryParameters);
+
+    if (useCache && response.statusCode == 200) {
+      _apiCacheService.set<dynamic>(cacheKey, response.data, ttl: cacheTtl);
+    }
+
+    return response;
+  }
+
+  void invalidateCacheByPrefix(String pathPrefix) {
+    _apiCacheService.invalidateByPrefix(pathPrefix);
+  }
 
   /// 디바이스 등록
   /// POST /api/v1/users/devices
@@ -169,6 +205,19 @@ class ApiClient {
       }
       return null;
     }
+  }
+
+  String _buildCacheKey(String path, Map<String, dynamic>? queryParameters) {
+    if (queryParameters == null || queryParameters.isEmpty) {
+      return path;
+    }
+
+    final normalizedQuery = Map<String, dynamic>.from(queryParameters);
+    final sortedKeys = normalizedQuery.keys.toList()..sort();
+    final queryParts = sortedKeys
+        .map((key) => '$key=${normalizedQuery[key]}')
+        .join('&');
+    return '$path?$queryParts';
   }
 }
 

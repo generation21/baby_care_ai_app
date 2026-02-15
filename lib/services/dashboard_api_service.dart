@@ -5,7 +5,7 @@ import '../models/care_record.dart';
 import '../utils/api_exception.dart';
 
 /// Dashboard API 서비스
-/// 
+///
 /// 빠른 기록 추가 및 타이머 관리 기능을 제공합니다.
 class DashboardApiService {
   final ApiClient _apiClient;
@@ -15,7 +15,7 @@ class DashboardApiService {
 
   /// 빠른 수유 기록 추가
   /// POST /api/v1/baby-care-ai/babies/{baby_id}/feeding-records
-  /// 
+  ///
   /// 현재 시간으로 간편하게 수유 기록을 추가합니다.
   Future<FeedingRecord> addQuickFeeding(
     int babyId, {
@@ -40,6 +40,8 @@ class DashboardApiService {
         '$_basePath/$babyId/feeding-records',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/dashboard');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/feeding-records');
 
       return FeedingRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -49,7 +51,7 @@ class DashboardApiService {
 
   /// 빠른 기저귀 기록 추가
   /// POST /api/v1/baby-care-ai/babies/{baby_id}/care-records
-  /// 
+  ///
   /// 현재 시간으로 간편하게 기저귀 교체 기록을 추가합니다.
   Future<CareRecord> addQuickDiaper(
     int babyId, {
@@ -67,6 +69,8 @@ class DashboardApiService {
           if (notes != null) 'notes': notes,
         },
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/dashboard');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -76,19 +80,17 @@ class DashboardApiService {
 
   /// 수면 시작
   /// POST /api/v1/baby-care-ai/babies/{baby_id}/care-records
-  /// 
+  ///
   /// 수면 시작 시간을 기록합니다 (종료 시간 없음).
   Future<CareRecord> startSleep(int babyId) async {
     try {
       final now = DateTime.now().toIso8601String();
       final response = await _apiClient.dio.post(
         '$_basePath/$babyId/care-records',
-        data: {
-          'record_type': 'sleep',
-          'sleep_start': now,
-          'recorded_at': now,
-        },
+        data: {'record_type': 'sleep', 'sleep_start': now, 'recorded_at': now},
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/dashboard');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -98,17 +100,17 @@ class DashboardApiService {
 
   /// 수면 종료
   /// PUT /api/v1/baby-care-ai/babies/{baby_id}/care-records/{record_id}
-  /// 
+  ///
   /// 진행 중인 수면 기록에 종료 시간을 추가합니다.
   Future<CareRecord> endSleep(int babyId, int recordId) async {
     try {
       final now = DateTime.now().toIso8601String();
       final response = await _apiClient.dio.put(
         '$_basePath/$babyId/care-records/$recordId',
-        data: {
-          'sleep_end': now,
-        },
+        data: {'sleep_end': now},
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/dashboard');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/care-records');
 
       return CareRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -117,7 +119,7 @@ class DashboardApiService {
   }
 
   /// 수유 타이머 시작
-  /// 
+  ///
   /// 로컬에서 관리되는 타이머 상태를 서버에 동기화합니다.
   /// 실제 기록은 타이머 완료 시 생성됩니다.
   Map<String, dynamic> startFeedingTimer({
@@ -155,6 +157,8 @@ class DashboardApiService {
         '$_basePath/$babyId/feeding-records',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/dashboard');
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/feeding-records');
 
       return FeedingRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {

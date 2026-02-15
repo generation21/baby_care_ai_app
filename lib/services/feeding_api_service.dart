@@ -4,11 +4,12 @@ import '../models/feeding_record.dart';
 import '../utils/api_exception.dart';
 
 /// Feeding API 서비스
-/// 
+///
 /// 수유 기록 CRUD 기능을 제공합니다.
 class FeedingApiService {
   final ApiClient _apiClient;
   static const String _basePath = '/api/v1/baby-care-ai/babies';
+  static const Duration _defaultCacheTtl = Duration(minutes: 5);
 
   FeedingApiService(this._apiClient);
 
@@ -23,17 +24,15 @@ class FeedingApiService {
     int offset = 0,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'limit': limit,
-        'offset': offset,
-      };
+      final queryParams = <String, dynamic>{'limit': limit, 'offset': offset};
       if (feedingType != null) queryParams['feeding_type'] = feedingType;
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/feeding-records',
         queryParameters: queryParams,
+        cacheTtl: _defaultCacheTtl,
       );
 
       return (response.data as List)
@@ -48,8 +47,9 @@ class FeedingApiService {
   /// GET /api/v1/baby-care-ai/babies/{baby_id}/feeding-records/{record_id}
   Future<FeedingRecord> getFeedingRecord(int babyId, int recordId) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '$_basePath/$babyId/feeding-records/$recordId',
+        cacheTtl: _defaultCacheTtl,
       );
 
       return FeedingRecord.fromJson(response.data as Map<String, dynamic>);
@@ -85,6 +85,7 @@ class FeedingApiService {
         '$_basePath/$babyId/feeding-records',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/feeding-records');
 
       return FeedingRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -121,6 +122,7 @@ class FeedingApiService {
         '$_basePath/$babyId/feeding-records/$recordId',
         data: data,
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/feeding-records');
 
       return FeedingRecord.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -135,6 +137,7 @@ class FeedingApiService {
       await _apiClient.dio.delete(
         '$_basePath/$babyId/feeding-records/$recordId',
       );
+      _apiClient.invalidateCacheByPrefix('$_basePath/$babyId/feeding-records');
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }

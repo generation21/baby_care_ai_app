@@ -12,10 +12,7 @@ import '../../widgets/feeding/feeding_type_filter.dart';
 class FeedingListScreen extends StatefulWidget {
   final int babyId;
 
-  const FeedingListScreen({
-    super.key,
-    required this.babyId,
-  });
+  const FeedingListScreen({super.key, required this.babyId});
 
   @override
   State<FeedingListScreen> createState() => _FeedingListScreenState();
@@ -23,6 +20,7 @@ class FeedingListScreen extends StatefulWidget {
 
 class _FeedingListScreenState extends State<FeedingListScreen> {
   static const double _paginationTriggerOffset = 240;
+  static const double _listCacheExtent = 800;
 
   final ScrollController _scrollController = ScrollController();
   String _selectedFeedingType = FeedingTypeFilter.allValue;
@@ -109,7 +107,8 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
                 IconButton(
                   icon: const Icon(Icons.add),
                   tooltip: '수유 기록 추가',
-                  onPressed: () => context.push('/feeding/${widget.babyId}/add'),
+                  onPressed: () =>
+                      context.push('/feeding/${widget.babyId}/add'),
                 ),
               ],
             ),
@@ -134,6 +133,7 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
                     onRefresh: _loadRecords,
                     child: ListView.builder(
                       controller: _scrollController,
+                      cacheExtent: _listCacheExtent,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       itemCount: feedingState.records.length + 1,
                       itemBuilder: (context, index) {
@@ -166,9 +166,7 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderLight),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,10 +217,7 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadRecords,
-              child: const Text('다시 시도'),
-            ),
+            ElevatedButton(onPressed: _loadRecords, child: const Text('다시 시도')),
           ],
         ),
       ),
@@ -236,7 +231,11 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.restaurant, size: 72, color: AppColors.textSecondary),
+            const Icon(
+              Icons.restaurant,
+              size: 72,
+              color: AppColors.textSecondary,
+            ),
             const SizedBox(height: 16),
             Text(
               '수유 기록이 없습니다',
@@ -271,7 +270,9 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
         child: Center(
           child: Text(
             '모든 수유 기록을 불러왔습니다.',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
           ),
         ),
       );

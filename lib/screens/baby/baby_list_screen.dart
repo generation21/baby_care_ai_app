@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../models/baby.dart';
 import '../../states/baby_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -15,6 +16,8 @@ class BabyListScreen extends StatefulWidget {
 }
 
 class _BabyListScreenState extends State<BabyListScreen> {
+  static const double _listCacheExtent = 600;
+
   @override
   void initState() {
     super.initState();
@@ -49,39 +52,49 @@ class _BabyListScreenState extends State<BabyListScreen> {
               ],
             ),
             Expanded(
-              child: Consumer<BabyState>(
-                builder: (context, babyState, child) {
-                  if (babyState.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (babyState.errorMessage != null) {
-                    return _buildErrorState(
-                      message: babyState.errorMessage!,
-                      onRetry: _loadBabies,
-                    );
-                  }
-
-                  if (babyState.babies.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: _loadBabies,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: babyState.babies.length,
-                      itemBuilder: (context, index) {
-                        final baby = babyState.babies[index];
-                        return BabyCard(
-                          baby: baby,
-                          onTap: () => context.push('/baby/${baby.id}'),
-                        );
-                      },
+              child:
+                  Selector<
+                    BabyState,
+                    ({bool isLoading, String? errorMessage, List<Baby> babies})
+                  >(
+                    selector: (_, state) => (
+                      isLoading: state.isLoading,
+                      errorMessage: state.errorMessage,
+                      babies: state.babies,
                     ),
-                  );
-                },
-              ),
+                    builder: (context, vm, child) {
+                      if (vm.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (vm.errorMessage != null) {
+                        return _buildErrorState(
+                          message: vm.errorMessage!,
+                          onRetry: _loadBabies,
+                        );
+                      }
+
+                      if (vm.babies.isEmpty) {
+                        return _buildEmptyState();
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: _loadBabies,
+                        child: ListView.builder(
+                          cacheExtent: _listCacheExtent,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: vm.babies.length,
+                          itemBuilder: (context, index) {
+                            final baby = vm.babies[index];
+                            return BabyCard(
+                              baby: baby,
+                              onTap: () => context.push('/baby/${baby.id}'),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
             ),
           ],
         ),
@@ -99,11 +112,7 @@ class _BabyListScreenState extends State<BabyListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               message,
@@ -111,10 +120,7 @@ class _BabyListScreenState extends State<BabyListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('다시 시도'),
-            ),
+            ElevatedButton(onPressed: onRetry, child: const Text('다시 시도')),
           ],
         ),
       ),

@@ -25,6 +25,7 @@ class CareListScreen extends StatefulWidget {
 
 class _CareListScreenState extends State<CareListScreen> {
   static const double _paginationTriggerOffset = 240;
+  static const double _listCacheExtent = 800;
 
   final ScrollController _scrollController = ScrollController();
   String _selectedRecordType = CareTypeFilter.allValue;
@@ -123,7 +124,8 @@ class _CareListScreenState extends State<CareListScreen> {
                   if (careState.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (careState.errorMessage != null && careState.records.isEmpty) {
+                  if (careState.errorMessage != null &&
+                      careState.records.isEmpty) {
                     return _buildErrorState(careState.errorMessage!);
                   }
                   if (careState.records.isEmpty) {
@@ -134,6 +136,7 @@ class _CareListScreenState extends State<CareListScreen> {
                     onRefresh: _loadRecords,
                     child: ListView.builder(
                       controller: _scrollController,
+                      cacheExtent: _listCacheExtent,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       itemCount: careState.records.length + 1,
                       itemBuilder: (context, index) {
@@ -166,9 +169,7 @@ class _CareListScreenState extends State<CareListScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderLight),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,10 +220,7 @@ class _CareListScreenState extends State<CareListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadRecords,
-              child: const Text('다시 시도'),
-            ),
+            ElevatedButton(onPressed: _loadRecords, child: const Text('다시 시도')),
           ],
         ),
       ),
@@ -236,7 +234,11 @@ class _CareListScreenState extends State<CareListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.event_note, size: 72, color: AppColors.textSecondary),
+            const Icon(
+              Icons.event_note,
+              size: 72,
+              color: AppColors.textSecondary,
+            ),
             const SizedBox(height: 16),
             Text(
               '육아 기록이 없습니다',
@@ -271,7 +273,9 @@ class _CareListScreenState extends State<CareListScreen> {
         child: Center(
           child: Text(
             '모든 육아 기록을 불러왔습니다.',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
           ),
         ),
       );
