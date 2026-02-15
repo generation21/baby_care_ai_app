@@ -215,7 +215,6 @@ class _BabyDetailScreenState extends State<BabyDetailScreen> {
               _buildInfoRow('나이', ageText),
               if (baby.gender != null)
                 _buildInfoRow('성별', baby.gender == 'male' ? '남아' : '여아'),
-              if (baby.bloodType != null) _buildInfoRow('혈액형', baby.bloodType!),
             ],
           ),
           if (baby.notes != null && baby.notes!.isNotEmpty) ...[

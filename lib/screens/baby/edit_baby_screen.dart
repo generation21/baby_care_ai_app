@@ -76,7 +76,6 @@ class _EditBabyScreenState extends State<EditBabyScreen> {
             name: formData.name,
             birthDate: _toApiDateString(formData.birthDate),
             gender: formData.gender,
-            bloodType: formData.bloodType,
             notes: formData.notes == null ? null : {'memo': formData.notes},
           );
 
@@ -158,7 +157,6 @@ class _EditBabyScreenState extends State<EditBabyScreen> {
       initialName: _baby!.name,
       initialBirthDate: birthDate,
       initialGender: _baby!.gender,
-      initialBloodType: _baby!.bloodType,
       initialNotes: memo,
       onSubmit: _handleUpdate,
     );

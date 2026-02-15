@@ -6,37 +6,23 @@ class BabyFormData {
   final String name;
   final DateTime birthDate;
   final String? gender;
-  final String? bloodType;
   final String? notes;
 
   const BabyFormData({
     required this.name,
     required this.birthDate,
     this.gender,
-    this.bloodType,
     this.notes,
   });
 }
 
 class BabyForm extends StatefulWidget {
-  static const List<String> bloodTypeOptions = <String>[
-    'A+',
-    'A-',
-    'B+',
-    'B-',
-    'O+',
-    'O-',
-    'AB+',
-    'AB-',
-  ];
-
   final String title;
   final String submitButtonText;
   final bool isSubmitting;
   final String? initialName;
   final DateTime? initialBirthDate;
   final String? initialGender;
-  final String? initialBloodType;
   final String? initialNotes;
   final Future<void> Function(BabyFormData formData) onSubmit;
 
@@ -49,7 +35,6 @@ class BabyForm extends StatefulWidget {
     this.initialName,
     this.initialBirthDate,
     this.initialGender,
-    this.initialBloodType,
     this.initialNotes,
   });
 
@@ -70,7 +55,6 @@ class _BabyFormState extends State<BabyForm> {
 
   DateTime? _selectedBirthDate;
   String? _selectedGender;
-  String? _selectedBloodType;
 
   @override
   void initState() {
@@ -79,7 +63,6 @@ class _BabyFormState extends State<BabyForm> {
     _notesController = TextEditingController(text: widget.initialNotes ?? '');
     _selectedBirthDate = widget.initialBirthDate;
     _selectedGender = widget.initialGender;
-    _selectedBloodType = widget.initialBloodType;
     _birthDateController = TextEditingController(
       text: _formatDate(widget.initialBirthDate),
     );
@@ -128,7 +111,6 @@ class _BabyFormState extends State<BabyForm> {
       name: _nameController.text.trim(),
       birthDate: _selectedBirthDate!,
       gender: _selectedGender,
-      bloodType: _selectedBloodType,
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
@@ -150,8 +132,6 @@ class _BabyFormState extends State<BabyForm> {
             _buildBirthDateField(),
             const SizedBox(height: _sectionSpacing),
             _buildGenderField(),
-            const SizedBox(height: _sectionSpacing),
-            _buildBloodTypeField(),
             const SizedBox(height: _sectionSpacing),
             _buildNotesField(),
             const SizedBox(height: _sectionSpacing * 2),
@@ -239,35 +219,6 @@ class _BabyFormState extends State<BabyForm> {
         color: isSelected ? AppColors.primary : AppColors.border,
       ),
       backgroundColor: AppColors.surface,
-    );
-  }
-
-  Widget _buildBloodTypeField() {
-    return DropdownButtonFormField<String?>(
-      initialValue: _selectedBloodType,
-      decoration: _buildInputDecoration(
-        labelText: '혈액형',
-        hintText: '선택 안함',
-      ),
-      items: <DropdownMenuItem<String?>>[
-        const DropdownMenuItem<String?>(
-          value: null,
-          child: Text('선택 안함'),
-        ),
-        ...BabyForm.bloodTypeOptions.map(
-          (bloodType) => DropdownMenuItem<String?>(
-            value: bloodType,
-            child: Text(bloodType),
-          ),
-        ),
-      ],
-      onChanged: widget.isSubmitting
-          ? null
-          : (value) {
-              setState(() {
-                _selectedBloodType = value;
-              });
-            },
     );
   }
 

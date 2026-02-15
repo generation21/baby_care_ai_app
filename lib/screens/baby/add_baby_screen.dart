@@ -30,7 +30,6 @@ class _AddBabyScreenState extends State<AddBabyScreen> {
             name: formData.name,
             birthDate: _toApiDateString(formData.birthDate),
             gender: formData.gender,
-            bloodType: formData.bloodType,
             notes: formData.notes == null ? null : {'memo': formData.notes},
           );
 
