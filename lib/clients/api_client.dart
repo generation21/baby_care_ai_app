@@ -1,18 +1,64 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../services/auth_service.dart';
+import '../services/logging_service.dart';
+import '../services/network_status_service.dart';
 
 /// API 클라이언트
 ///
 /// .env의 API_BASE_URL을 사용하여 백엔드와 통신합니다.
 /// Supabase Access Token을 Authorization 헤더에 자동 추가합니다.
 class ApiClient {
+  static const String _retryCountKey = '__retry_count__';
+  static const int _maxRetryAttempts = 2;
+
   late final Dio _dio;
   final AuthService _authService;
+  final LoggingService _loggingService = LoggingService.instance;
+  final NetworkStatusService _networkStatusService =
+      NetworkStatusService.instance;
 
   ApiClient(this._authService) {
     _dio = ApiConfig.createDio();
     _dio.interceptors.add(AuthInterceptor(_authService));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          _loggingService.debug(
+            '${options.method} ${options.path}',
+            tag: 'HTTP-REQ',
+          );
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          _networkStatusService.markOnline();
+          _loggingService.debug(
+            '${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.path}',
+            tag: 'HTTP-RES',
+          );
+          handler.next(response);
+        },
+        onError: (error, handler) async {
+          _networkStatusService.updateByDioException(error);
+
+          if (_shouldRetry(error)) {
+            final retryRequest = await _retry(error);
+            if (retryRequest != null) {
+              handler.resolve(retryRequest);
+              return;
+            }
+          }
+
+          _loggingService.error(
+            '요청 실패: ${error.requestOptions.method} ${error.requestOptions.path}',
+            tag: 'HTTP-ERR',
+            error: error.message,
+          );
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   Dio get dio => _dio;
@@ -43,10 +89,7 @@ class ApiClient {
   }) async {
     final response = await _dio.post(
       '/api/v1/users/login',
-      data: {
-        'device_token': deviceToken,
-        'app_id': appId,
-      },
+      data: {'device_token': deviceToken, 'app_id': appId},
     );
     return response.data as Map<String, dynamic>;
   }
@@ -81,6 +124,52 @@ class ApiClient {
     }
     return '서버와 통신 중 오류가 발생했습니다: ${e.message}';
   }
+
+  bool _shouldRetry(DioException error) {
+    if (error.requestOptions.method.toUpperCase() != 'GET') {
+      return false;
+    }
+
+    final retryCount =
+        (error.requestOptions.extra[_retryCountKey] as int?) ?? 0;
+    if (retryCount >= _maxRetryAttempts) {
+      return false;
+    }
+
+    return error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.response?.statusCode == 502 ||
+        error.response?.statusCode == 503 ||
+        error.response?.statusCode == 504;
+  }
+
+  Future<Response<dynamic>?> _retry(DioException error) async {
+    final requestOptions = error.requestOptions;
+    final currentRetryCount =
+        (requestOptions.extra[_retryCountKey] as int?) ?? 0;
+    final nextRetryCount = currentRetryCount + 1;
+
+    requestOptions.extra[_retryCountKey] = nextRetryCount;
+    _loggingService.warning(
+      '요청 재시도 ($nextRetryCount/$_maxRetryAttempts): ${requestOptions.method} ${requestOptions.path}',
+      tag: 'HTTP-RETRY',
+    );
+
+    try {
+      final retryResponse = await _dio.fetch(requestOptions);
+      return retryResponse;
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        _loggingService.debug(
+          '재시도 실패: ${e.requestOptions.path}',
+          tag: 'HTTP-RETRY',
+        );
+      }
+      return null;
+    }
+  }
 }
 
 /// 인증 인터셉터
@@ -92,10 +181,7 @@ class AuthInterceptor extends Interceptor {
   AuthInterceptor(this._authService);
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final token = _authService.accessToken;
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
