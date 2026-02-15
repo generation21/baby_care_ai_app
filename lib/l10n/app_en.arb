@@ -1,0 +1,102 @@
+{
+  "@@locale": "en",
+  "appTitle": "Baby Care AI",
+  "settingsTitle": "Settings",
+  "profileSectionTitle": "Profile",
+  "profileMenuTitle": "Profile settings",
+  "profileMenuSubtitle": "Manage name and account info",
+  "languageSectionTitle": "Language",
+  "languageTileTitle": "App language",
+  "languageKorean": "Korean",
+  "languageEnglish": "English",
+  "languageJapanese": "Japanese",
+  "themeSectionTitle": "Theme",
+  "themeSystemTitle": "System",
+  "themeSystemSubtitle": "Follow device theme",
+  "themeLightTitle": "Light",
+  "themeLightSubtitle": "Use light mode",
+  "themeDarkTitle": "Dark",
+  "themeDarkSubtitle": "Use dark mode",
+  "notificationsSectionTitle": "Notifications",
+  "notificationsToggleTitle": "Enable notifications",
+  "notificationsToggleSubtitle": "Detailed options will be added later",
+  "permissionsSectionTitle": "Permissions",
+  "notificationPermissionTitle": "Notification permission",
+  "photoPermissionTitle": "Photo permission",
+  "permissionStatusGranted": "Granted",
+  "permissionStatusDenied": "Denied",
+  "permissionStatusLimited": "Limited",
+  "permissionStatusNeedSettings": "Open settings",
+  "permissionActionRequest": "Request",
+  "permissionActionOpenSettings": "Settings",
+  "permissionRequestAll": "Request required permissions again",
+  "appInfoSectionTitle": "App info",
+  "appVersionTitle": "App version",
+  "accountSectionTitle": "Account",
+  "logoutTitle": "Log out",
+  "cancel": "Cancel",
+  "logoutDescription": "After logging out, the app signs in as a new anonymous user.",
+  "profileSettingsTitle": "Profile settings",
+  "basicInfoTitle": "Basic info",
+  "displayNameLabel": "Display name",
+  "displayNameHint": "e.g. Mom, Dad",
+  "saveNameButton": "Save name",
+  "savedProfileNameMessage": "Profile name saved.",
+  "accountInfoTitle": "Account info",
+  "userIdLabel": "User ID",
+  "deviceIdLabel": "Device ID",
+  "splashTagline": "Track, Care, Connect",
+  "loadingLabel": "Loading...",
+  "versionPrefix": "Version",
+  "feedingListTitle": "Feeding records",
+  "addFeedingTooltip": "Add feeding record",
+  "retryButton": "Retry",
+  "emptyFeedingTitle": "No feeding records",
+  "emptyFeedingSubtitle": "Tap + at the top-right to add one.",
+  "allFeedingLoaded": "All feeding records are loaded.",
+  "dateRangeFilterLabel": "Date filter",
+  "clearDateRangeButton": "Clear date range",
+  "feedingAmountLabel": "Amount",
+  "feedingDurationLabel": "Duration",
+  "feedingSideLabel": "Side",
+  "minutesLabel": "{count}m",
+  "@minutesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sideLeft": "Left",
+  "sideRight": "Right",
+  "sideBoth": "Both",
+  "careListTitle": "Care records",
+  "addCareTooltip": "Add care record",
+  "emptyCareTitle": "No care records",
+  "emptyCareSubtitle": "Tap + at the top-right to add one.",
+  "allCareLoaded": "All care records are loaded.",
+  "diaperRecordSummary": "Diaper record",
+  "sleepRecordSummary": "Sleep record",
+  "sleepDurationSummary": "Sleep {hours}h {minutes}m",
+  "@sleepDurationSummary": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "temperatureRecordSummary": "Temperature record",
+  "temperatureValueSummary": "Temperature {value}°{unit}",
+  "@temperatureValueSummary": {
+    "placeholders": {
+      "value": {},
+      "unit": {}
+    }
+  },
+  "medicineRecordSummary": "Medication record",
+  "bathRecordSummary": "Bath record",
+  "otherRecordSummary": "Other record"
+}

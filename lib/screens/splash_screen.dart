@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../l10n/l10n.dart';
 import '../services/permission_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -51,6 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: SafeArea(
@@ -90,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Track, Care, Connect',
+                    l10n.splashTagline,
                     style: AppTextStyles.body2.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                       letterSpacing: 2,
@@ -119,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Loading...',
+                    l10n.loadingLabel,
                     style: AppTextStyles.caption.copyWith(
                       color: Colors.white.withValues(alpha: 0.7),
                     ),
@@ -133,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen> {
               Column(
                 children: [
                   Text(
-                    'Version 1.0.0',
+                    '${l10n.versionPrefix} 1.0.0',
                     style: AppTextStyles.overline.copyWith(
                       color: Colors.white.withValues(alpha: 0.5),
                     ),

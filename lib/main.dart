@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'clients/api_client.dart';
 import 'config/app_router.dart';
 import 'config/supabase_config.dart';
+import 'l10n/app_localizations.dart';
 import 'services/baby_api_service.dart';
 import 'services/feeding_api_service.dart';
 import 'services/care_api_service.dart';
@@ -20,6 +21,7 @@ import 'states/dashboard_state.dart';
 import 'states/feeding_state.dart';
 import 'states/care_state.dart';
 import 'states/gpt_state.dart';
+import 'states/locale_state.dart';
 import 'states/timer_state.dart';
 import 'states/theme_state.dart';
 import 'theme/app_theme.dart';
@@ -88,6 +90,7 @@ class BabyCareApp extends StatelessWidget {
         // AuthState - 인증 상태 (최우선)
         ChangeNotifierProvider(create: (_) => AuthState()),
         ChangeNotifierProvider(create: (_) => ThemeState()..initialize()),
+        ChangeNotifierProvider(create: (_) => LocaleState()..initialize()),
 
         // API 클라이언트 및 서비스 - AuthState에 의존
         ProxyProvider<AuthState, ApiClient>(
@@ -142,13 +145,14 @@ class BabyCareApp extends StatelessWidget {
               previous ?? TimerState(apiService),
         ),
       ],
-      child: Consumer<ThemeState>(
-        builder: (context, themeState, _) {
+      child: Consumer2<ThemeState, LocaleState>(
+        builder: (context, themeState, localeState, _) {
           return MaterialApp.router(
             title: 'Baby Care AI',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeState.themeMode,
+            locale: localeState.locale,
             builder: (context, child) {
               if (child == null) {
                 return const SizedBox.shrink();
@@ -158,12 +162,12 @@ class BabyCareApp extends StatelessWidget {
             routerConfig: AppRouter.createRouter(context),
             debugShowCheckedModeBanner: false,
             localizationsDelegates: const [
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
-            locale: const Locale('ko', 'KR'),
+            supportedLocales: AppLocalizations.supportedLocales,
           );
         },
       ),

@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../../l10n/l10n.dart';
 import '../../services/permission_service.dart';
 import '../../services/settings_service.dart';
 import '../../states/auth_state.dart';
+import '../../states/locale_state.dart';
 import '../../states/theme_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -20,32 +23,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  static const String _title = '설정';
-  static const String _profileMenuTitle = '프로필 설정';
-  static const String _profileMenuSubtitle = '이름 및 계정 정보 관리';
-  static const String _themeSectionTitle = '테마';
-  static const String _notificationsSectionTitle = '알림';
-  static const String _permissionsSectionTitle = '권한';
-  static const String _appInfoSectionTitle = '앱 정보';
-  static const String _logoutSectionTitle = '계정';
-  static const String _notificationsToggleTitle = '알림 받기';
-  static const String _notificationsToggleSubtitle = '향후 세부 알림 설정이 추가됩니다';
-  static const String _notificationPermissionTitle = '알림 권한';
-  static const String _photoPermissionTitle = '사진 권한';
-  static const String _versionTileTitle = '앱 버전';
-  static const String _logoutTileTitle = '로그아웃';
-  static const String _logoutDialogTitle = '로그아웃';
-  static const String _logoutDialogDescription =
-      '로그아웃 후 앱을 다시 열면 새로운 익명 사용자로 로그인됩니다.';
-  static const String _statusGranted = '허용됨';
-  static const String _statusDenied = '거부됨';
-  static const String _statusLimited = '제한됨';
-  static const String _statusPermanentlyDenied = '설정 필요';
-  static const String _statusRestricted = '제한됨';
-  static const String _requestPermissionLabel = '권한 요청';
-  static const String _openSystemSettingsLabel = '설정 열기';
-  static const String _requestAllPermissionsLabel = '필수 권한 다시 요청';
-
   final SettingsService _settingsService = SettingsService();
   final PermissionService _permissionService = PermissionService();
 
@@ -125,20 +102,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _confirmAndLogout() async {
+    final l10n = context.l10n;
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(_logoutDialogTitle),
-        content: const Text(_logoutDialogDescription),
+        title: Text(l10n.logoutTitle),
+        content: Text(l10n.logoutDescription),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text(_logoutDialogTitle),
+            child: Text(l10n.logoutTitle),
           ),
         ],
       ),
@@ -157,7 +135,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final themeState = context.watch<ThemeState>();
+    final localeState = context.watch<LocaleState>();
 
     if (_isLoading) {
       return Scaffold(
@@ -172,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             AppBarWidget(
-              title: _title,
+              title: l10n.settingsTitle,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.go('/dashboard'),
@@ -182,54 +162,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(AppDimensions.md),
                 children: [
-                  _SectionHeader(title: '프로필'),
+                  _SectionHeader(title: l10n.profileSectionTitle),
                   _SettingsCard(
                     children: [
                       _SettingsTile(
                         icon: Icons.person_outline,
-                        title: _profileMenuTitle,
-                        subtitle: _profileMenuSubtitle,
+                        title: l10n.profileMenuTitle,
+                        subtitle: l10n.profileMenuSubtitle,
                         onTap: () => context.push('/settings/profile'),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: _themeSectionTitle),
+                  _SectionHeader(title: l10n.languageSectionTitle),
+                  _SettingsCard(
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.language_outlined,
+                        title: l10n.languageTileTitle,
+                        trailing: DropdownButton<String>(
+                          value: localeState.locale?.languageCode ?? 'ko',
+                          underline: const SizedBox.shrink(),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'ko',
+                              child: Text(l10n.languageKorean),
+                            ),
+                            DropdownMenuItem(
+                              value: 'en',
+                              child: Text(l10n.languageEnglish),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ja',
+                              child: Text(l10n.languageJapanese),
+                            ),
+                          ],
+                          onChanged: (value) async {
+                            if (value == null) {
+                              return;
+                            }
+                            await context.read<LocaleState>().setLocale(
+                              Locale(value),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.xl),
+                  _SectionHeader(title: l10n.themeSectionTitle),
                   _SettingsCard(
                     children: [
                       _ThemeModeTile(
                         mode: ThemeMode.system,
                         selectedMode: themeState.selectedThemeMode,
-                        title: '시스템 설정',
-                        subtitle: '디바이스 테마를 따릅니다',
+                        title: l10n.themeSystemTitle,
+                        subtitle: l10n.themeSystemSubtitle,
                         onTap: () => themeState.setThemeMode(ThemeMode.system),
                       ),
                       const Divider(height: 1),
                       _ThemeModeTile(
                         mode: ThemeMode.light,
                         selectedMode: themeState.selectedThemeMode,
-                        title: '라이트',
-                        subtitle: '밝은 테마 사용',
+                        title: l10n.themeLightTitle,
+                        subtitle: l10n.themeLightSubtitle,
                         onTap: () => themeState.setThemeMode(ThemeMode.light),
                       ),
                       const Divider(height: 1),
                       _ThemeModeTile(
                         mode: ThemeMode.dark,
                         selectedMode: themeState.selectedThemeMode,
-                        title: '다크',
-                        subtitle: '어두운 테마 사용',
+                        title: l10n.themeDarkTitle,
+                        subtitle: l10n.themeDarkSubtitle,
                         onTap: () => themeState.setThemeMode(ThemeMode.dark),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: _notificationsSectionTitle),
+                  _SectionHeader(title: l10n.notificationsSectionTitle),
                   _SettingsCard(
                     children: [
                       _SettingsTile(
                         icon: Icons.notifications_outlined,
-                        title: _notificationsToggleTitle,
-                        subtitle: _notificationsToggleSubtitle,
+                        title: l10n.notificationsToggleTitle,
+                        subtitle: l10n.notificationsToggleSubtitle,
                         trailing: Switch(
                           value: _notificationsEnabled,
                           activeTrackColor: AppColors.primary,
@@ -239,15 +255,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: _permissionsSectionTitle),
+                  _SectionHeader(title: l10n.permissionsSectionTitle),
                   _SettingsCard(
                     children: [
                       _PermissionTile(
                         icon: Icons.notifications_active_outlined,
-                        title: _notificationPermissionTitle,
+                        title: l10n.notificationPermissionTitle,
                         status: _notificationPermissionStatus,
                         statusLabel: _statusLabel(
                           _notificationPermissionStatus,
+                          l10n,
                         ),
                         onActionTap: () => _handlePermissionAction(
                           AppPermissionType.notifications,
@@ -255,46 +272,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         actionLabel: _actionLabel(
                           _notificationPermissionStatus,
+                          l10n,
                         ),
                       ),
                       const Divider(height: 1),
                       _PermissionTile(
                         icon: Icons.photo_library_outlined,
-                        title: _photoPermissionTitle,
+                        title: l10n.photoPermissionTitle,
                         status: _photoPermissionStatus,
-                        statusLabel: _statusLabel(_photoPermissionStatus),
+                        statusLabel: _statusLabel(_photoPermissionStatus, l10n),
                         onActionTap: () => _handlePermissionAction(
                           AppPermissionType.photos,
                           _photoPermissionStatus,
                         ),
-                        actionLabel: _actionLabel(_photoPermissionStatus),
+                        actionLabel: _actionLabel(_photoPermissionStatus, l10n),
                       ),
                       const Divider(height: 1),
                       _SettingsTile(
                         icon: Icons.refresh_outlined,
-                        title: _requestAllPermissionsLabel,
+                        title: l10n.permissionRequestAll,
                         onTap: _requestAllPermissions,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: _appInfoSectionTitle),
+                  _SectionHeader(title: l10n.appInfoSectionTitle),
                   _SettingsCard(
                     children: [
                       _SettingsTile(
                         icon: Icons.info_outline,
-                        title: _versionTileTitle,
+                        title: l10n.appVersionTitle,
                         subtitle: _appVersionLabel,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: _logoutSectionTitle),
+                  _SectionHeader(title: l10n.accountSectionTitle),
                   _SettingsCard(
                     children: [
                       _SettingsTile(
                         icon: Icons.logout_outlined,
-                        title: _logoutTileTitle,
+                        title: l10n.logoutTitle,
                         titleColor: AppColors.error,
                         onTap: _confirmAndLogout,
                       ),
@@ -309,28 +327,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  String _statusLabel(PermissionStatus status) {
+  String _statusLabel(PermissionStatus status, AppLocalizations l10n) {
     switch (status) {
       case PermissionStatus.granted:
-        return _statusGranted;
+        return l10n.permissionStatusGranted;
       case PermissionStatus.denied:
-        return _statusDenied;
+        return l10n.permissionStatusDenied;
       case PermissionStatus.limited:
-        return _statusLimited;
+        return l10n.permissionStatusLimited;
       case PermissionStatus.permanentlyDenied:
-        return _statusPermanentlyDenied;
+        return l10n.permissionStatusNeedSettings;
       case PermissionStatus.restricted:
-        return _statusRestricted;
+        return l10n.permissionStatusLimited;
       case PermissionStatus.provisional:
-        return _statusLimited;
+        return l10n.permissionStatusLimited;
     }
   }
 
-  String _actionLabel(PermissionStatus status) {
+  String _actionLabel(PermissionStatus status, AppLocalizations l10n) {
     if (status == PermissionStatus.permanentlyDenied) {
-      return _openSystemSettingsLabel;
+      return l10n.permissionActionOpenSettings;
     }
-    return _requestPermissionLabel;
+    return l10n.permissionActionRequest;
   }
 
   Future<void> _handlePermissionAction(

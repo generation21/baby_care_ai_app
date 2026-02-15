@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/l10n.dart';
 import '../../states/care_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -98,13 +99,14 @@ class _CareListScreenState extends State<CareListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             AppBarWidget(
-              title: '육아 기록',
+              title: l10n.careListTitle,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.pop(),
@@ -112,7 +114,7 @@ class _CareListScreenState extends State<CareListScreen> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.add),
-                  tooltip: '육아 기록 추가',
+                  tooltip: l10n.addCareTooltip,
                   onPressed: () => context.push('/care/${widget.babyId}/add'),
                 ),
               ],
@@ -195,7 +197,7 @@ class _CareListScreenState extends State<CareListScreen> {
                 const SizedBox(width: 8),
                 TextButton(
                   onPressed: _clearDateRange,
-                  child: const Text('기간 초기화'),
+                  child: Text(context.l10n.clearDateRangeButton),
                 ),
               ],
             ],
@@ -220,7 +222,10 @@ class _CareListScreenState extends State<CareListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadRecords, child: const Text('다시 시도')),
+            ElevatedButton(
+              onPressed: _loadRecords,
+              child: Text(context.l10n.retryButton),
+            ),
           ],
         ),
       ),
@@ -241,14 +246,14 @@ class _CareListScreenState extends State<CareListScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              '육아 기록이 없습니다',
+              context.l10n.emptyCareTitle,
               style: AppTextStyles.bodyLarge.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              '우측 상단 + 버튼으로 기록을 추가해보세요.',
+              context.l10n.emptyCareSubtitle,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -272,7 +277,7 @@ class _CareListScreenState extends State<CareListScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Center(
           child: Text(
-            '모든 육아 기록을 불러왔습니다.',
+            context.l10n.allCareLoaded,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textTertiary,
             ),
@@ -285,9 +290,10 @@ class _CareListScreenState extends State<CareListScreen> {
 
   String _dateRangeLabel() {
     if (_selectedDateRange == null) {
-      return '기간 필터';
+      return context.l10n.dateRangeFilterLabel;
     }
-    final formatter = DateFormat('MM/dd');
+    final localeName = Localizations.localeOf(context).toLanguageTag();
+    final formatter = DateFormat.Md(localeName);
     return '${formatter.format(_selectedDateRange!.start)} - ${formatter.format(_selectedDateRange!.end)}';
   }
 

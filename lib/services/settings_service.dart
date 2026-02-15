@@ -5,6 +5,7 @@ class SettingsService {
   static const String _keyNotificationsEnabled =
       'settings_notifications_enabled';
   static const String _keyDisplayName = 'settings_profile_display_name';
+  static const String _keyLocaleCode = 'settings_locale_code';
 
   Future<bool> getNotificationsEnabled() async {
     final preferences = await SharedPreferences.getInstance();
@@ -24,6 +25,16 @@ class SettingsService {
   Future<void> setDisplayName(String displayName) async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(_keyDisplayName, displayName);
+  }
+
+  Future<String?> getLocaleCode() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getString(_keyLocaleCode);
+  }
+
+  Future<void> setLocaleCode(String localeCode) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_keyLocaleCode, localeCode);
   }
 
   Future<String> getAppVersionLabel() async {

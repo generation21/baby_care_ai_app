@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/l10n.dart';
 import '../../services/settings_service.dart';
 import '../../states/auth_state.dart';
 import '../../theme/app_colors.dart';
@@ -16,8 +17,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  static const String _title = '프로필 설정';
-
   final SettingsService _settingsService = SettingsService();
   final TextEditingController _displayNameController = TextEditingController();
 
@@ -47,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _saveDisplayName() async {
+    final l10n = context.l10n;
     final displayName = _displayNameController.text.trim();
     await _settingsService.setDisplayName(displayName);
     if (!mounted) {
@@ -54,11 +54,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('프로필 이름을 저장했습니다.')));
+    ).showSnackBar(SnackBar(content: Text(l10n.savedProfileNameMessage)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final authState = context.watch<AuthState>();
 
     if (_isLoading) {
@@ -74,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             AppBarWidget(
-              title: _title,
+              title: l10n.profileSettingsTitle,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.of(context).pop(),
@@ -85,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(AppDimensions.md),
                 children: [
                   Text(
-                    '기본 정보',
+                    l10n.basicInfoTitle,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -106,9 +107,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         TextField(
                           controller: _displayNameController,
-                          decoration: const InputDecoration(
-                            labelText: '표시 이름',
-                            hintText: '예: 엄마, 아빠',
+                          decoration: InputDecoration(
+                            labelText: l10n.displayNameLabel,
+                            hintText: l10n.displayNameHint,
                           ),
                         ),
                         const SizedBox(height: AppDimensions.md),
@@ -116,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: _saveDisplayName,
-                            child: const Text('이름 저장'),
+                            child: Text(l10n.saveNameButton),
                           ),
                         ),
                       ],
@@ -124,16 +125,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: AppDimensions.xl),
                   Text(
-                    '계정 정보',
+                    l10n.accountInfoTitle,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: AppDimensions.xs),
-                  _InfoCard(title: '사용자 ID', value: authState.userId ?? '-'),
+                  _InfoCard(
+                    title: l10n.userIdLabel,
+                    value: authState.userId ?? '-',
+                  ),
                   const SizedBox(height: AppDimensions.xs),
-                  _InfoCard(title: '디바이스 ID', value: authState.deviceId ?? '-'),
+                  _InfoCard(
+                    title: l10n.deviceIdLabel,
+                    value: authState.deviceId ?? '-',
+                  ),
                 ],
               ),
             ),

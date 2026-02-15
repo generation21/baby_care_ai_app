@@ -1,0 +1,102 @@
+{
+  "@@locale": "ja",
+  "appTitle": "Baby Care AI",
+  "settingsTitle": "設定",
+  "profileSectionTitle": "プロフィール",
+  "profileMenuTitle": "プロフィール設定",
+  "profileMenuSubtitle": "名前とアカウント情報を管理",
+  "languageSectionTitle": "言語",
+  "languageTileTitle": "アプリ言語",
+  "languageKorean": "韓国語",
+  "languageEnglish": "英語",
+  "languageJapanese": "日本語",
+  "themeSectionTitle": "テーマ",
+  "themeSystemTitle": "システム設定",
+  "themeSystemSubtitle": "端末のテーマに従います",
+  "themeLightTitle": "ライト",
+  "themeLightSubtitle": "明るいテーマを使用",
+  "themeDarkTitle": "ダーク",
+  "themeDarkSubtitle": "暗いテーマを使用",
+  "notificationsSectionTitle": "通知",
+  "notificationsToggleTitle": "通知を受け取る",
+  "notificationsToggleSubtitle": "詳細な通知設定は今後追加予定です",
+  "permissionsSectionTitle": "権限",
+  "notificationPermissionTitle": "通知権限",
+  "photoPermissionTitle": "写真権限",
+  "permissionStatusGranted": "許可済み",
+  "permissionStatusDenied": "拒否",
+  "permissionStatusLimited": "制限あり",
+  "permissionStatusNeedSettings": "設定が必要",
+  "permissionActionRequest": "権限を要求",
+  "permissionActionOpenSettings": "設定を開く",
+  "permissionRequestAll": "必須権限を再要求",
+  "appInfoSectionTitle": "アプリ情報",
+  "appVersionTitle": "アプリバージョン",
+  "accountSectionTitle": "アカウント",
+  "logoutTitle": "ログアウト",
+  "cancel": "キャンセル",
+  "logoutDescription": "ログアウト後にアプリを再起動すると、新しい匿名ユーザーでログインします。",
+  "profileSettingsTitle": "プロフィール設定",
+  "basicInfoTitle": "基本情報",
+  "displayNameLabel": "表示名",
+  "displayNameHint": "例: ママ、パパ",
+  "saveNameButton": "名前を保存",
+  "savedProfileNameMessage": "プロフィール名を保存しました。",
+  "accountInfoTitle": "アカウント情報",
+  "userIdLabel": "ユーザーID",
+  "deviceIdLabel": "デバイスID",
+  "splashTagline": "Track, Care, Connect",
+  "loadingLabel": "Loading...",
+  "versionPrefix": "Version",
+  "feedingListTitle": "授乳記録",
+  "addFeedingTooltip": "授乳記録を追加",
+  "retryButton": "再試行",
+  "emptyFeedingTitle": "授乳記録がありません",
+  "emptyFeedingSubtitle": "右上の + ボタンで授乳記録を追加してください。",
+  "allFeedingLoaded": "すべての授乳記録を読み込みました。",
+  "dateRangeFilterLabel": "期間フィルター",
+  "clearDateRangeButton": "期間をリセット",
+  "feedingAmountLabel": "量",
+  "feedingDurationLabel": "時間",
+  "feedingSideLabel": "部位",
+  "minutesLabel": "{count}分",
+  "@minutesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sideLeft": "左",
+  "sideRight": "右",
+  "sideBoth": "両方",
+  "careListTitle": "育児記録",
+  "addCareTooltip": "育児記録を追加",
+  "emptyCareTitle": "育児記録がありません",
+  "emptyCareSubtitle": "右上の + ボタンで記録を追加してください。",
+  "allCareLoaded": "すべての育児記録を読み込みました。",
+  "diaperRecordSummary": "おむつ記録",
+  "sleepRecordSummary": "睡眠記録",
+  "sleepDurationSummary": "睡眠時間 {hours}時間 {minutes}分",
+  "@sleepDurationSummary": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "temperatureRecordSummary": "体温記録",
+  "temperatureValueSummary": "体温 {value}°{unit}",
+  "@temperatureValueSummary": {
+    "placeholders": {
+      "value": {},
+      "unit": {}
+    }
+  },
+  "medicineRecordSummary": "服薬記録",
+  "bathRecordSummary": "入浴記録",
+  "otherRecordSummary": "その他記録"
+}
