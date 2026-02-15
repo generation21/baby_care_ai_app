@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../models/care_record.dart';
 import '../../models/dashboard.dart';
+import '../../states/care_state.dart';
 import '../../states/dashboard_state.dart';
 import '../../states/baby_state.dart';
 import '../../states/auth_state.dart';
@@ -29,6 +31,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedNavIndex = 0;
   Dashboard? _dashboard;
+  CareRecord? _activeSleepRecord;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -56,6 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // 먼저 아기 목록 로드
       final babyState = context.read<BabyState>();
       final dashboardState = context.read<DashboardState>();
+      final careState = context.read<CareState>();
       await babyState.loadBabies();
 
       // 아기가 없으면 빈 상태로 표시
@@ -72,10 +76,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // 첫 번째 아기의 대시보드 로드
       final firstBaby = babyState.babies.first;
       await dashboardState.loadDashboard(firstBaby.id);
+      await careState.loadRecords(
+        firstBaby.id,
+        recordType: 'sleep',
+      );
 
       if (mounted) {
         setState(() {
           _dashboard = dashboardState.dashboard;
+          _activeSleepRecord = careState.activeSleepRecord;
           _isLoading = false;
         });
       }
@@ -234,6 +243,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leftDurationSeconds: _dashboard!.activeFeedingTimer.leftDurationSeconds,
               rightDurationSeconds: _dashboard!.activeFeedingTimer.rightDurationSeconds,
             ),
+            const SizedBox(height: 12),
+            _buildActiveSleepStatusCard(_dashboard!.babyInfo.id),
             const SizedBox(height: 24),
 
             // 최근 기록
@@ -253,12 +264,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 context.push('/care/${_dashboard!.babyInfo.id}?type=diaper');
               },
               onTapSleep: () {
-                context.push('/care/${_dashboard!.babyInfo.id}?type=sleep');
+                context.push('/sleep/${_dashboard!.babyInfo.id}');
               },
             ),
             const SizedBox(height: 80), // 하단 여백 (FAB 고려)
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActiveSleepStatusCard(int babyId) {
+    final activeSleepRecord = _activeSleepRecord;
+    final sleepStartTime = DateTime.tryParse(activeSleepRecord?.sleepStart ?? '');
+    final elapsedMinutes = sleepStartTime == null
+        ? null
+        : DateTime.now().difference(sleepStartTime).inMinutes;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '수면 상태',
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            activeSleepRecord == null
+                ? '현재 진행 중인 수면이 없습니다'
+                : '수면 진행 중 (${elapsedMinutes ?? 0}분 경과)',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                await context.push('/sleep/$babyId');
+                if (mounted) {
+                  _loadDashboard();
+                }
+              },
+              icon: Icon(activeSleepRecord == null ? Icons.play_arrow : Icons.bedtime),
+              label: Text(activeSleepRecord == null ? '수면 시작하기' : '수면 추적 보기'),
+            ),
+          ),
+        ],
       ),
     );
   }

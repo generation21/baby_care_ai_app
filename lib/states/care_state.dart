@@ -241,6 +241,36 @@ class CareState extends ChangeNotifier {
     }
   }
 
+  /// 수면 기록 시작
+  Future<CareRecord> startSleepRecord(
+    int babyId, {
+    String? notes,
+  }) async {
+    final nowIsoString = DateTime.now().toIso8601String();
+    return createCareRecord(
+      babyId,
+      recordType: CareRecordType.sleep,
+      sleepStart: nowIsoString,
+      recordedAt: nowIsoString,
+      notes: notes,
+    );
+  }
+
+  /// 수면 기록 종료
+  Future<CareRecord> endSleepRecord(
+    int babyId, {
+    required int recordId,
+    String? notes,
+  }) async {
+    final nowIsoString = DateTime.now().toIso8601String();
+    return editCareRecord(
+      babyId,
+      recordId,
+      sleepEnd: nowIsoString,
+      notes: notes,
+    );
+  }
+
   /// 육아 기록 생성 후 목록에 추가
   void addRecord(CareRecord record) {
     _records.insert(0, record);

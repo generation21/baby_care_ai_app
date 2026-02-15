@@ -17,6 +17,7 @@ import '../screens/feeding/feeding_detail_screen.dart';
 import '../screens/feeding/feeding_list_screen.dart';
 import '../screens/feeding/feeding_timer_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/sleep/sleep_tracker_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
 
@@ -248,6 +249,16 @@ class AppRouter {
               babyId: babyId,
               recordId: recordId,
             );
+          },
+        ),
+
+        // 수면 추적
+        GoRoute(
+          path: '/sleep/:babyId',
+          name: 'sleep-tracker',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return SleepTrackerScreen(babyId: babyId);
           },
         ),
       ],
