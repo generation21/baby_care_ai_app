@@ -247,13 +247,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             LastRecordsSection(
               lastRecords: _dashboard!.lastRecords,
               onTapFeeding: () {
-                // TODO: 수유 상세 화면
+                context.push('/feeding/${_dashboard!.babyInfo.id}');
               },
               onTapDiaper: () {
-                // TODO: 기저귀 상세 화면
+                context.push('/care/${_dashboard!.babyInfo.id}?type=diaper');
               },
               onTapSleep: () {
-                // TODO: 수면 상세 화면
+                context.push('/care/${_dashboard!.babyInfo.id}?type=sleep');
               },
             ),
             const SizedBox(height: 80), // 하단 여백 (FAB 고려)

@@ -6,6 +6,10 @@ import '../screens/baby/add_baby_screen.dart';
 import '../screens/baby/baby_detail_screen.dart';
 import '../screens/baby/baby_list_screen.dart';
 import '../screens/baby/edit_baby_screen.dart';
+import '../screens/care/add_care_screen.dart';
+import '../screens/care/care_detail_screen.dart';
+import '../screens/care/care_list_screen.dart';
+import '../screens/care/edit_care_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/feeding/add_feeding_screen.dart';
 import '../screens/feeding/edit_feeding_screen.dart';
@@ -189,6 +193,58 @@ class AppRouter {
             final babyId = int.parse(state.pathParameters['babyId']!);
             final recordId = int.parse(state.pathParameters['recordId']!);
             return EditFeedingScreen(
+              babyId: babyId,
+              recordId: recordId,
+            );
+          },
+        ),
+
+        // 육아 기록 목록
+        GoRoute(
+          path: '/care/:babyId',
+          name: 'care-list',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final recordType = state.uri.queryParameters['type'];
+            return CareListScreen(
+              babyId: babyId,
+              initialRecordType: recordType,
+            );
+          },
+        ),
+
+        // 육아 기록 추가
+        GoRoute(
+          path: '/care/:babyId/add',
+          name: 'care-add',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return AddCareScreen(babyId: babyId);
+          },
+        ),
+
+        // 육아 기록 상세
+        GoRoute(
+          path: '/care/:babyId/:recordId',
+          name: 'care-detail',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final recordId = int.parse(state.pathParameters['recordId']!);
+            return CareDetailScreen(
+              babyId: babyId,
+              recordId: recordId,
+            );
+          },
+        ),
+
+        // 육아 기록 수정
+        GoRoute(
+          path: '/care/:babyId/:recordId/edit',
+          name: 'care-edit',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final recordId = int.parse(state.pathParameters['recordId']!);
+            return EditCareScreen(
               babyId: babyId,
               recordId: recordId,
             );
