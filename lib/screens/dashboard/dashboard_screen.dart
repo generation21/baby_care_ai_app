@@ -55,6 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       // 먼저 아기 목록 로드
       final babyState = context.read<BabyState>();
+      final dashboardState = context.read<DashboardState>();
       await babyState.loadBabies();
 
       // 아기가 없으면 빈 상태로 표시
@@ -70,7 +71,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // 첫 번째 아기의 대시보드 로드
       final firstBaby = babyState.babies.first;
-      final dashboardState = context.read<DashboardState>();
       await dashboardState.loadDashboard(firstBaby.id);
 
       if (mounted) {
@@ -104,11 +104,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0: // Home
         break;
       case 1: // Records
-        // TODO: 기록 화면으로 이동
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('기록 화면 준비 중입니다')),
-          );
+          final currentBabyId = _dashboard?.babyInfo.id;
+          if (currentBabyId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('먼저 아이를 등록해주세요')),
+            );
+          } else {
+            context.push('/feeding/$currentBabyId');
+          }
         }
         break;
       case 2: // AI Chat

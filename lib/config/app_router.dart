@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../screens/add_child_screen.dart';
 import '../screens/ai_chat_screen.dart';
-import '../screens/babies_screen.dart';
-import '../screens/baby_detail_screen.dart';
+import '../screens/baby/add_baby_screen.dart';
+import '../screens/baby/baby_detail_screen.dart';
+import '../screens/baby/baby_list_screen.dart';
+import '../screens/baby/edit_baby_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/feeding/add_feeding_screen.dart';
+import '../screens/feeding/edit_feeding_screen.dart';
+import '../screens/feeding/feeding_detail_screen.dart';
+import '../screens/feeding/feeding_list_screen.dart';
 import '../screens/feeding/feeding_timer_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
@@ -81,7 +86,7 @@ class AppRouter {
         GoRoute(
           path: '/babies',
           name: 'babies',
-          builder: (context, state) => const BabiesScreen(),
+          builder: (context, state) => const BabyListScreen(),
         ),
         
         // 아기 상세 (파라미터: id)
@@ -89,8 +94,18 @@ class AppRouter {
           path: '/baby/:id',
           name: 'baby-detail',
           builder: (context, state) {
-            final babyId = state.pathParameters['id']!;
+            final babyId = int.parse(state.pathParameters['id']!);
             return BabyDetailScreen(babyId: babyId);
+          },
+        ),
+
+        // 아기 수정
+        GoRoute(
+          path: '/baby/:id/edit',
+          name: 'baby-edit',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['id']!);
+            return EditBabyScreen(babyId: babyId);
           },
         ),
         
@@ -105,7 +120,14 @@ class AppRouter {
         GoRoute(
           path: '/add-child',
           name: 'add-child',
-          builder: (context, state) => const AddChildScreen(),
+          builder: (context, state) => const AddBabyScreen(),
+        ),
+
+        // 아기 추가 (신규 경로)
+        GoRoute(
+          path: '/baby/add',
+          name: 'baby-add',
+          builder: (context, state) => const AddBabyScreen(),
         ),
         
         // AI 채팅
@@ -122,6 +144,54 @@ class AppRouter {
           builder: (context, state) {
             final babyId = int.parse(state.pathParameters['babyId']!);
             return FeedingTimerScreen(babyId: babyId);
+          },
+        ),
+
+        // 수유 기록 목록
+        GoRoute(
+          path: '/feeding/:babyId',
+          name: 'feeding-list',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return FeedingListScreen(babyId: babyId);
+          },
+        ),
+
+        // 수유 기록 추가
+        GoRoute(
+          path: '/feeding/:babyId/add',
+          name: 'feeding-add',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return AddFeedingScreen(babyId: babyId);
+          },
+        ),
+
+        // 수유 기록 상세
+        GoRoute(
+          path: '/feeding/:babyId/:recordId',
+          name: 'feeding-detail',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final recordId = int.parse(state.pathParameters['recordId']!);
+            return FeedingDetailScreen(
+              babyId: babyId,
+              recordId: recordId,
+            );
+          },
+        ),
+
+        // 수유 기록 수정
+        GoRoute(
+          path: '/feeding/:babyId/:recordId/edit',
+          name: 'feeding-edit',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            final recordId = int.parse(state.pathParameters['recordId']!);
+            return EditFeedingScreen(
+              babyId: babyId,
+              recordId: recordId,
+            );
           },
         ),
       ],

@@ -8,6 +8,8 @@ import '../utils/api_exception.dart';
 /// FeedingRecord 목록 및 페이지네이션 상태를 관리합니다.
 class FeedingState extends ChangeNotifier {
   final FeedingApiService _apiService;
+  static const int _defaultPageSize = 50;
+  static const int _maxPageSize = 100;
 
   List<FeedingRecord> _records = [];
   bool _isLoading = false;
@@ -17,7 +19,7 @@ class FeedingState extends ChangeNotifier {
   // 페이지네이션
   int _offset = 0;
   bool _hasMore = true;
-  static const int _pageSize = 50;
+  int _currentPageSize = _defaultPageSize;
 
   // 필터
   String? _feedingTypeFilter;
@@ -44,11 +46,13 @@ class FeedingState extends ChangeNotifier {
     String? feedingType,
     String? startDate,
     String? endDate,
+    int? limit,
   }) async {
     _setLoading(true);
     _clearError();
     _offset = 0;
     _hasMore = true;
+    _currentPageSize = _resolvePageSize(limit);
 
     // 필터 저장
     _feedingTypeFilter = feedingType;
@@ -61,13 +65,13 @@ class FeedingState extends ChangeNotifier {
         feedingType: feedingType,
         startDate: startDate,
         endDate: endDate,
-        limit: _pageSize,
+        limit: _currentPageSize,
         offset: _offset,
       );
 
       _records = newRecords;
       _offset = newRecords.length;
-      _hasMore = newRecords.length == _pageSize;
+      _hasMore = newRecords.length == _currentPageSize;
 
       _setLoading(false);
       notifyListeners();
@@ -97,13 +101,13 @@ class FeedingState extends ChangeNotifier {
         feedingType: _feedingTypeFilter,
         startDate: _startDateFilter,
         endDate: _endDateFilter,
-        limit: _pageSize,
+        limit: _currentPageSize,
         offset: _offset,
       );
 
       _records.addAll(newRecords);
       _offset += newRecords.length;
-      _hasMore = newRecords.length == _pageSize;
+      _hasMore = newRecords.length == _currentPageSize;
 
       _isLoadingMore = false;
       notifyListeners();
@@ -147,6 +151,80 @@ class FeedingState extends ChangeNotifier {
       
       return newRecord;
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// 수유 기록 상세 조회
+  Future<FeedingRecord> getFeedingRecord(int babyId, int recordId) async {
+    try {
+      final record = await _apiService.getFeedingRecord(babyId, recordId);
+      final existingIndex = _records.indexWhere((item) => item.id == record.id);
+      if (existingIndex >= 0) {
+        _records[existingIndex] = record;
+        notifyListeners();
+      }
+      return record;
+    } on ApiException catch (e) {
+      _setError(ErrorHandler.getErrorMessage(e));
+      notifyListeners();
+      rethrow;
+    } catch (e) {
+      _setError('수유 기록을 불러오는 중 오류가 발생했습니다.');
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 수유 기록 수정
+  Future<FeedingRecord> editFeedingRecord(
+    int babyId,
+    int recordId, {
+    FeedingType? feedingType,
+    int? amount,
+    String? unit,
+    int? durationMinutes,
+    String? side,
+    String? notes,
+    String? recordedAt,
+  }) async {
+    try {
+      final updatedRecord = await _apiService.updateFeedingRecord(
+        babyId,
+        recordId,
+        feedingType: feedingType,
+        amount: amount,
+        unit: unit,
+        durationMinutes: durationMinutes,
+        side: side,
+        notes: notes,
+        recordedAt: recordedAt,
+      );
+      updateRecord(updatedRecord);
+      return updatedRecord;
+    } on ApiException catch (e) {
+      _setError(ErrorHandler.getErrorMessage(e));
+      notifyListeners();
+      rethrow;
+    } catch (e) {
+      _setError('수유 기록을 수정하는 중 오류가 발생했습니다.');
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 수유 기록 삭제
+  Future<void> deleteFeedingRecord(int babyId, int recordId) async {
+    try {
+      await _apiService.deleteFeedingRecord(babyId, recordId);
+      removeRecord(recordId);
+    } on ApiException catch (e) {
+      _setError(ErrorHandler.getErrorMessage(e));
+      notifyListeners();
+      rethrow;
+    } catch (e) {
+      _setError('수유 기록을 삭제하는 중 오류가 발생했습니다.');
+      notifyListeners();
       rethrow;
     }
   }
@@ -200,6 +278,7 @@ class FeedingState extends ChangeNotifier {
     _errorMessage = null;
     _offset = 0;
     _hasMore = true;
+    _currentPageSize = _defaultPageSize;
     _feedingTypeFilter = null;
     _startDateFilter = null;
     _endDateFilter = null;
@@ -209,6 +288,18 @@ class FeedingState extends ChangeNotifier {
   void _setLoading(bool value) => _isLoading = value;
   void _setError(String message) => _errorMessage = message;
   void _clearError() => _errorMessage = null;
+  int _resolvePageSize(int? limit) {
+    if (limit == null) {
+      return _defaultPageSize;
+    }
+    if (limit <= 0) {
+      return _defaultPageSize;
+    }
+    if (limit > _maxPageSize) {
+      return _maxPageSize;
+    }
+    return limit;
+  }
 
   /// 에러 메시지 클리어
   void clearError() {
