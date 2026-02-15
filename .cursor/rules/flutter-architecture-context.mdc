@@ -1,0 +1,48 @@
+---
+description: Baby Care AI Flutter architecture and project context guardrails
+globs: **/*.dart
+alwaysApply: false
+---
+
+# Baby Care AI Architecture Rule
+
+이 프로젝트는 부모가 아기 돌봄 데이터를 기록/조회하는 Flutter 앱이며, 핵심 도메인은 Baby, Feeding, Care, Sleep, GPT, Dashboard다.
+
+## Layer Responsibilities
+
+- `screens/`: 페이지 조합과 라우팅 진입만 담당하고 비즈니스 로직은 직접 구현하지 않는다.
+- `widgets/`: 재사용 가능한 UI 조각만 담당하며 API 호출/전역 상태 변경을 직접 수행하지 않는다.
+- `states/`: `ChangeNotifier` 기반 상태와 로딩/에러/선택 상태를 관리하고, 외부 통신은 주입된 service로 위임한다.
+- `services/`: API 엔드포인트별 요청/응답 매핑과 예외 변환을 담당하고 UI 의존 코드를 두지 않는다.
+- `clients/`: 공통 HTTP 클라이언트/인증 토큰/인터셉터를 담당한다.
+- `models/`: 직렬화 가능한 데이터 구조만 유지한다 (`json_serializable` 패턴 유지).
+
+## Dependency Direction
+
+- 의존성은 `screens/widgets -> states -> services -> clients` 단방향만 허용한다.
+- `main.dart`의 Provider/ProxyProvider DI 패턴을 유지하고, 하위 레이어가 상위 레이어를 import하지 않는다.
+
+## Project Conventions
+
+- 신규 기능은 기존 도메인 폴더 구조(`screens/<domain>`, `widgets/<domain>`, `states`, `services`, `models`)에 맞춰 추가한다.
+- 라우팅은 `go_router` 규칙을 따르고 경로/파라미터 처리는 `config/app_router.dart`에 일관되게 반영한다.
+- 스타일 값은 매직 넘버 대신 테마/상수(`theme/*`, `utils/constants.dart`)를 우선 사용한다.
+- 사용자 메시지, 에러, 로딩 처리 방식은 기존 state 클래스 패턴과 동일한 흐름으로 구현한다.
+
+## Example (Do/Don't)
+
+```dart
+// ❌ Screen에서 직접 API 호출
+final response = await Dio().get('/babies');
+
+// ✅ Screen -> State 호출, State -> Service 위임
+await context.read<BabyState>().loadBabies();
+```
+
+```dart
+// ❌ Widget에서 비즈니스 규칙/네트워크 분기 구현
+if (isPremiumUser) { await apiClient.post(...); }
+
+// ✅ Widget은 이벤트 전달만, 규칙은 state/service에 위치
+onPressed: () => context.read<CareState>().createRecord(...)
+```
