@@ -10,7 +10,6 @@ import '../../states/auth_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_bar_widget.dart';
-import '../../widgets/bottom_navigation_widget.dart';
 import '../../widgets/dashboard/baby_info_card.dart';
 import '../../widgets/dashboard/daily_summary_card.dart';
 import '../../widgets/dashboard/active_feeding_timer.dart';
@@ -29,7 +28,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedNavIndex = 0;
+  static const double _floatingButtonBottomSpacing = 16.0;
+
   Dashboard? _dashboard;
   CareRecord? _activeSleepRecord;
   bool _isLoading = true;
@@ -76,10 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // 첫 번째 아기의 대시보드 로드
       final firstBaby = babyState.babies.first;
       await dashboardState.loadDashboard(firstBaby.id);
-      await careState.loadRecords(
-        firstBaby.id,
-        recordType: 'sleep',
-      );
+      await careState.loadRecords(firstBaby.id, recordType: 'sleep');
 
       if (mounted) {
         setState(() {
@@ -101,40 +98,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// Pull to Refresh
   Future<void> _onRefresh() async {
     await _loadDashboard();
-  }
-
-  /// 네비게이션 탭
-  void _onNavigationTap(int index) {
-    setState(() {
-      _selectedNavIndex = index;
-    });
-
-      switch (index) {
-      case 0: // Home
-        break;
-      case 1: // Records
-        if (mounted) {
-          final currentBabyId = _dashboard?.babyInfo.id;
-          if (currentBabyId == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('먼저 아이를 등록해주세요')),
-            );
-          } else {
-            context.push('/feeding/$currentBabyId');
-          }
-        }
-        break;
-      case 2: // AI Chat
-        if (mounted) {
-          context.push('/ai-chat');
-        }
-        break;
-      case 3: // Settings
-        if (mounted) {
-          context.push('/settings');
-        }
-        break;
-    }
   }
 
   @override
@@ -164,22 +127,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             // 메인 콘텐츠
-            Expanded(
-              child: _buildContent(),
-            ),
-            // 하단 네비게이션
-            BottomNavigationWidget(
-              currentIndex: _selectedNavIndex,
-              onTap: _onNavigationTap,
-            ),
+            Expanded(child: _buildContent()),
           ],
         ),
       ),
       // 빠른 추가 버튼
       floatingActionButton: _isLoading || _dashboard == null
           ? null
-          : QuickAddButton(
-              babyId: _dashboard!.babyInfo.id,
+          : Padding(
+              padding: const EdgeInsets.only(
+                bottom: _floatingButtonBottomSpacing,
+              ),
+              child: QuickAddButton(babyId: _dashboard!.babyInfo.id),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -221,7 +180,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // 일별 통계 요약
             DailySummaryCard(
               todaySummary: _dashboard!.todaySummary,
-              totalFeedingAmount: _dashboard!.dailySummary.totalFeedingAmountValue.toInt(),
+              totalFeedingAmount: _dashboard!
+                  .dailySummary
+                  .totalFeedingAmountValue
+                  .toInt(),
             ),
             const SizedBox(height: 24),
 
@@ -235,13 +197,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 12),
             ActiveFeedingTimer(
               babyId: _dashboard!.babyInfo.id,
-              startTime: _dashboard!.activeFeedingTimer.isActive && 
-                         _dashboard!.activeFeedingTimer.startTime != null
+              startTime:
+                  _dashboard!.activeFeedingTimer.isActive &&
+                      _dashboard!.activeFeedingTimer.startTime != null
                   ? DateTime.parse(_dashboard!.activeFeedingTimer.startTime!)
                   : null,
               currentSide: _dashboard!.activeFeedingTimer.currentSide,
-              leftDurationSeconds: _dashboard!.activeFeedingTimer.leftDurationSeconds,
-              rightDurationSeconds: _dashboard!.activeFeedingTimer.rightDurationSeconds,
+              leftDurationSeconds:
+                  _dashboard!.activeFeedingTimer.leftDurationSeconds,
+              rightDurationSeconds:
+                  _dashboard!.activeFeedingTimer.rightDurationSeconds,
             ),
             const SizedBox(height: 12),
             _buildActiveSleepStatusCard(_dashboard!.babyInfo.id),
@@ -276,7 +241,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildActiveSleepStatusCard(int babyId) {
     final activeSleepRecord = _activeSleepRecord;
-    final sleepStartTime = DateTime.tryParse(activeSleepRecord?.sleepStart ?? '');
+    final sleepStartTime = DateTime.tryParse(
+      activeSleepRecord?.sleepStart ?? '',
+    );
     final elapsedMinutes = sleepStartTime == null
         ? null
         : DateTime.now().difference(sleepStartTime).inMinutes;
@@ -317,7 +284,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _loadDashboard();
                 }
               },
-              icon: Icon(activeSleepRecord == null ? Icons.play_arrow : Icons.bedtime),
+              icon: Icon(
+                activeSleepRecord == null ? Icons.play_arrow : Icons.bedtime,
+              ),
               label: Text(activeSleepRecord == null ? '수면 시작하기' : '수면 추적 보기'),
             ),
           ),
@@ -332,9 +301,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: AppColors.primary,
-          ),
+          CircularProgressIndicator(color: AppColors.primary),
           const SizedBox(height: 16),
           Text(
             '대시보드를 불러오는 중...',
@@ -355,11 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               '데이터를 불러오는데 실패했습니다',
@@ -407,11 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.child_care,
-              size: 80,
-              color: AppColors.textSecondary,
-            ),
+            Icon(Icons.child_care, size: 80, color: AppColors.textSecondary),
             const SizedBox(height: 24),
             Text(
               '등록된 아기가 없습니다',
@@ -452,5 +411,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
 }

@@ -44,23 +44,35 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
   }
 
   Future<void> _loadRecords() async {
-    final feedingState = context.read<FeedingState>();
-    await feedingState.loadRecords(
-      widget.babyId,
-      feedingType: FeedingTypeFilter.toApiValue(_selectedFeedingType),
-      startDate: _formatDateForApi(_selectedDateRange?.start),
-      endDate: _formatDateForApi(_selectedDateRange?.end),
-    );
+    try {
+      final feedingState = context.read<FeedingState>();
+      await feedingState.loadRecords(
+        widget.babyId,
+        feedingType: FeedingTypeFilter.toApiValue(_selectedFeedingType),
+        startDate: _formatDateForApi(_selectedDateRange?.start),
+        endDate: _formatDateForApi(_selectedDateRange?.end),
+      );
+    } catch (_) {
+      // 에러 메시지/로딩 상태는 FeedingState에서 이미 처리하므로,
+      // 화면 레벨에서는 예외를 다시 전파하지 않는다.
+    }
   }
 
   void _onScroll() {
     if (!_scrollController.hasClients) {
       return;
     }
+    final feedingState = context.read<FeedingState>();
+    if (feedingState.isLoading || feedingState.isLoadingMore) {
+      return;
+    }
     final maxScroll = _scrollController.position.maxScrollExtent;
+    if (maxScroll <= 0) {
+      return;
+    }
     final currentScroll = _scrollController.position.pixels;
     if (maxScroll - currentScroll <= _paginationTriggerOffset) {
-      context.read<FeedingState>().loadMore(widget.babyId);
+      feedingState.loadMore(widget.babyId);
     }
   }
 
@@ -91,6 +103,15 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
     await _loadRecords();
   }
 
+  void _handleBackNavigation() {
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+      return;
+    }
+    router.go('/dashboard');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -103,7 +124,7 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
               title: l10n.feedingListTitle,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop(),
+                onPressed: _handleBackNavigation,
               ),
               actions: [
                 IconButton(

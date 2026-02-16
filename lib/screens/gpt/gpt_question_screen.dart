@@ -58,7 +58,8 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
     if (!mounted) {
       return;
     }
-    final firstBabyId = babyState.selectedBaby?.id ??
+    final firstBabyId =
+        babyState.selectedBaby?.id ??
         (babyState.babies.isNotEmpty ? babyState.babies.first.id : null);
     setState(() {
       _selectedBabyId = firstBabyId;
@@ -68,9 +69,9 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
   Future<void> _askQuestion() async {
     final selectedBabyId = _selectedBabyId;
     if (selectedBabyId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('먼저 아이를 등록해주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('먼저 아이를 등록해주세요.')));
       return;
     }
 
@@ -95,10 +96,10 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
 
     try {
       final conversation = await context.read<GPTState>().askQuestion(
-            selectedBabyId,
-            question: question,
-            contextDays: _contextDays,
-          );
+        selectedBabyId,
+        question: question,
+        contextDays: _contextDays,
+      );
 
       if (!mounted) {
         return;
@@ -111,9 +112,9 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('질문에 실패했습니다: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('질문에 실패했습니다: $error')));
     } finally {
       _loadingIndicatorTimer?.cancel();
       if (mounted) {
@@ -129,9 +130,18 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label 복사 완료')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label 복사 완료')));
+  }
+
+  void _handleBackNavigation() {
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+      return;
+    }
+    router.go('/dashboard');
   }
 
   @override
@@ -148,7 +158,7 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
               title: 'GPT 질문',
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop(),
+                onPressed: _handleBackNavigation,
               ),
               actions: [
                 IconButton(
@@ -156,7 +166,9 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
                   tooltip: '대화 기록',
                   onPressed: _selectedBabyId == null
                       ? null
-                      : () => context.push('/gpt/${_selectedBabyId!}/conversations'),
+                      : () => context.push(
+                          '/gpt/${_selectedBabyId!}/conversations',
+                        ),
                 ),
               ],
             ),
@@ -258,7 +270,12 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
         children: [
           Row(
             children: [
-              Text('질문', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700)),
+              Text(
+                '질문',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const Spacer(),
               IconButton(
                 onPressed: () => _copyText('질문', conversation.question),
@@ -267,14 +284,16 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
               ),
             ],
           ),
-          Text(
-            conversation.question,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(conversation.question, style: AppTextStyles.bodyMedium),
           const SizedBox(height: 12),
           Row(
             children: [
-              Text('GPT 응답', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700)),
+              Text(
+                'GPT 응답',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const Spacer(),
               IconButton(
                 onPressed: () => _copyText('응답', conversation.answer),
@@ -285,9 +304,7 @@ class _GPTQuestionScreenState extends State<GPTQuestionScreen> {
           ),
           MarkdownBody(
             data: conversation.answer,
-            styleSheet: MarkdownStyleSheet(
-              p: AppTextStyles.bodyMedium,
-            ),
+            styleSheet: MarkdownStyleSheet(p: AppTextStyles.bodyMedium),
           ),
         ],
       ),
