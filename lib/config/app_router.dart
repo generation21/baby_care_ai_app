@@ -18,11 +18,13 @@ import '../screens/feeding/feeding_timer_screen.dart';
 import '../screens/gpt/gpt_conversation_detail_screen.dart';
 import '../screens/gpt/gpt_conversation_list_screen.dart';
 import '../screens/gpt/gpt_question_screen.dart';
+import '../screens/history/history_tab_screen.dart';
 import '../screens/settings/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/sleep/sleep_tracker_screen.dart';
 import '../screens/splash_screen.dart';
 import '../states/auth_state.dart';
+import '../widgets/bottom_navigation_widget.dart';
 
 /// 앱 라우터 설정
 ///
@@ -43,6 +45,11 @@ import '../states/auth_state.dart';
 /// - 인증되지 않은 사용자: `/splash`로 리다이렉트
 /// - 인증된 사용자가 `/` 접근: `/dashboard`로 리다이렉트
 class AppRouter {
+  static const String _dashboardPath = '/dashboard';
+  static const String _historyPath = '/history';
+  static const String _aiChatPath = '/ai-chat';
+  static const String _settingsPath = '/settings';
+
   static GoRouter createRouter(BuildContext context) {
     return GoRouter(
       initialLocation: '/',
@@ -63,7 +70,7 @@ class AppRouter {
 
         // 루트 경로(/)는 대시보드로 리다이렉트
         if (currentLocation == '/') {
-          return '/dashboard';
+          return _dashboardPath;
         }
 
         return null;
@@ -73,7 +80,7 @@ class AppRouter {
         GoRoute(
           path: '/',
           name: 'home',
-          redirect: (context, state) => '/dashboard',
+          redirect: (context, state) => _dashboardPath,
         ),
 
         // 스플래시 화면
@@ -83,11 +90,39 @@ class AppRouter {
           builder: (context, state) => const SplashScreen(),
         ),
 
-        // 대시보드 (메인 화면)
-        GoRoute(
-          path: '/dashboard',
-          name: 'dashboard',
-          builder: (context, state) => const DashboardScreen(),
+        ShellRoute(
+          builder: (context, state, child) {
+            return _MainNavigationShell(
+              currentLocation: state.uri.path,
+              child: child,
+            );
+          },
+          routes: [
+            // 대시보드 (메인 화면)
+            GoRoute(
+              path: _dashboardPath,
+              name: 'dashboard',
+              builder: (context, state) => const DashboardScreen(),
+            ),
+            // 히스토리 탭
+            GoRoute(
+              path: _historyPath,
+              name: 'history',
+              builder: (context, state) => const HistoryTabScreen(),
+            ),
+            // AI 채팅 탭
+            GoRoute(
+              path: _aiChatPath,
+              name: 'ai-chat',
+              builder: (context, state) => const GPTQuestionScreen(),
+            ),
+            // 설정 탭
+            GoRoute(
+              path: _settingsPath,
+              name: 'settings',
+              builder: (context, state) => const SettingsScreen(),
+            ),
+          ],
         ),
 
         // 아기 목록
@@ -117,13 +152,6 @@ class AppRouter {
           },
         ),
 
-        // 설정
-        GoRoute(
-          path: '/settings',
-          name: 'settings',
-          builder: (context, state) => const SettingsScreen(),
-        ),
-
         // 프로필 설정
         GoRoute(
           path: '/settings/profile',
@@ -143,13 +171,6 @@ class AppRouter {
           path: '/baby/add',
           name: 'baby-add',
           builder: (context, state) => const AddBabyScreen(),
-        ),
-
-        // AI 채팅
-        GoRoute(
-          path: '/ai-chat',
-          name: 'ai-chat',
-          builder: (context, state) => const GPTQuestionScreen(),
         ),
 
         // GPT 대화 목록
@@ -286,6 +307,63 @@ class AppRouter {
           },
         ),
       ],
+    );
+  }
+}
+
+class _MainNavigationShell extends StatelessWidget {
+  static const int _homeTabIndex = 0;
+  static const int _historyTabIndex = 1;
+  static const int _aiChatTabIndex = 2;
+  static const int _settingsTabIndex = 3;
+
+  static const List<String> _tabPaths = [
+    AppRouter._dashboardPath,
+    AppRouter._historyPath,
+    AppRouter._aiChatPath,
+    AppRouter._settingsPath,
+  ];
+
+  final String currentLocation;
+  final Widget child;
+
+  const _MainNavigationShell({
+    required this.currentLocation,
+    required this.child,
+  });
+
+  int _resolveCurrentIndex() {
+    if (currentLocation.startsWith(AppRouter._historyPath)) {
+      return _historyTabIndex;
+    }
+    if (currentLocation.startsWith(AppRouter._aiChatPath)) {
+      return _aiChatTabIndex;
+    }
+    if (currentLocation.startsWith(AppRouter._settingsPath)) {
+      return _settingsTabIndex;
+    }
+    return _homeTabIndex;
+  }
+
+  void _onTap(BuildContext context, int index) {
+    if (index < 0 || index >= _tabPaths.length) {
+      return;
+    }
+    final destinationPath = _tabPaths[index];
+    if (currentLocation == destinationPath) {
+      return;
+    }
+    context.go(destinationPath);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: BottomNavigationWidget(
+        currentIndex: _resolveCurrentIndex(),
+        onTap: (index) => _onTap(context, index),
+      ),
     );
   }
 }

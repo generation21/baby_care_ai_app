@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -14,6 +15,8 @@ class BottomNavigationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       height: 72,
       decoration: BoxDecoration(
@@ -34,25 +37,25 @@ class BottomNavigationWidget extends StatelessWidget {
         children: [
           _NavItem(
             icon: Icons.home,
-            label: 'Home',
+            label: l10n.bottomNavHome,
             isActive: currentIndex == 0,
             onTap: () => onTap(0),
           ),
           _NavItem(
             icon: Icons.history,
-            label: 'History',
+            label: l10n.bottomNavHistory,
             isActive: currentIndex == 1,
             onTap: () => onTap(1),
           ),
           _NavItem(
             icon: Icons.chat_bubble,
-            label: 'AI Chat',
+            label: l10n.bottomNavAiChat,
             isActive: currentIndex == 2,
             onTap: () => onTap(2),
           ),
           _NavItem(
-            icon: Icons.person,
-            label: 'Profile',
+            icon: Icons.settings,
+            label: l10n.bottomNavSettings,
             isActive: currentIndex == 3,
             onTap: () => onTap(3),
           ),

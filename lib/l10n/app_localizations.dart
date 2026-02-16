@@ -552,6 +552,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other record'**
   String get otherRecordSummary;
+
+  /// No description provided for @bottomNavHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get bottomNavHome;
+
+  /// No description provided for @bottomNavHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get bottomNavHistory;
+
+  /// No description provided for @bottomNavAiChat.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat'**
+  String get bottomNavAiChat;
+
+  /// No description provided for @bottomNavSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get bottomNavSettings;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

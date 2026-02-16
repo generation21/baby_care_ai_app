@@ -241,4 +241,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get otherRecordSummary => '기타 기록';
+
+  @override
+  String get bottomNavHome => '홈';
+
+  @override
+  String get bottomNavHistory => '기록';
+
+  @override
+  String get bottomNavAiChat => 'AI 채팅';
+
+  @override
+  String get bottomNavSettings => '설정';
 }

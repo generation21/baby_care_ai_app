@@ -241,4 +241,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otherRecordSummary => 'Other record';
+
+  @override
+  String get bottomNavHome => 'Home';
+
+  @override
+  String get bottomNavHistory => 'History';
+
+  @override
+  String get bottomNavAiChat => 'AI Chat';
+
+  @override
+  String get bottomNavSettings => 'Settings';
 }

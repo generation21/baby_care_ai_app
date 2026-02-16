@@ -241,4 +241,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get otherRecordSummary => 'その他記録';
+
+  @override
+  String get bottomNavHome => 'ホーム';
+
+  @override
+  String get bottomNavHistory => '記録';
+
+  @override
+  String get bottomNavAiChat => 'AIチャット';
+
+  @override
+  String get bottomNavSettings => '設定';
 }

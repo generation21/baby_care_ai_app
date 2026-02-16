@@ -98,5 +98,9 @@
   },
   "medicineRecordSummary": "약물 기록",
   "bathRecordSummary": "목욕 기록",
-  "otherRecordSummary": "기타 기록"
+  "otherRecordSummary": "기타 기록",
+  "bottomNavHome": "홈",
+  "bottomNavHistory": "기록",
+  "bottomNavAiChat": "AI 채팅",
+  "bottomNavSettings": "설정"
 }

@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'clients/api_client.dart';
 import 'config/app_router.dart';
@@ -80,8 +81,21 @@ void main() async {
   );
 }
 
-class BabyCareApp extends StatelessWidget {
+class BabyCareApp extends StatefulWidget {
   const BabyCareApp({super.key});
+
+  @override
+  State<BabyCareApp> createState() => _BabyCareAppState();
+}
+
+class _BabyCareAppState extends State<BabyCareApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.createRouter(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +173,7 @@ class BabyCareApp extends StatelessWidget {
               }
               return NetworkStatusBanner(child: child);
             },
-            routerConfig: AppRouter.createRouter(context),
+            routerConfig: _router,
             debugShowCheckedModeBanner: false,
             localizationsDelegates: const [
               AppLocalizations.delegate,

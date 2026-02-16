@@ -99,4 +99,9 @@
   "medicineRecordSummary": "Medication record",
   "bathRecordSummary": "Bath record",
   "otherRecordSummary": "Other record"
+  ,
+  "bottomNavHome": "Home",
+  "bottomNavHistory": "History",
+  "bottomNavAiChat": "AI Chat",
+  "bottomNavSettings": "Settings"
 }

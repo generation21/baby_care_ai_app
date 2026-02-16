@@ -98,5 +98,9 @@
   },
   "medicineRecordSummary": "服薬記録",
   "bathRecordSummary": "入浴記録",
-  "otherRecordSummary": "その他記録"
+  "otherRecordSummary": "その他記録",
+  "bottomNavHome": "ホーム",
+  "bottomNavHistory": "記録",
+  "bottomNavAiChat": "AIチャット",
+  "bottomNavSettings": "設定"
 }
