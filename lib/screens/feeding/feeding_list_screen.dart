@@ -12,8 +12,13 @@ import '../../widgets/feeding/feeding_type_filter.dart';
 
 class FeedingListScreen extends StatefulWidget {
   final int babyId;
+  final bool embeddedInShell;
 
-  const FeedingListScreen({super.key, required this.babyId});
+  const FeedingListScreen({
+    super.key,
+    required this.babyId,
+    this.embeddedInShell = false,
+  });
 
   @override
   State<FeedingListScreen> createState() => _FeedingListScreenState();
@@ -22,6 +27,7 @@ class FeedingListScreen extends StatefulWidget {
 class _FeedingListScreenState extends State<FeedingListScreen> {
   static const double _paginationTriggerOffset = 240;
   static const double _listCacheExtent = 800;
+  static const double _inlineButtonMinWidth = 0;
 
   final ScrollController _scrollController = ScrollController();
   String _selectedFeedingType = FeedingTypeFilter.allValue;
@@ -115,71 +121,78 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final content = SafeArea(
+      child: Column(
+        children: [
+          AppBarWidget(
+            title: l10n.feedingListTitle,
+            leading: widget.embeddedInShell
+                ? null
+                : IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: _handleBackNavigation,
+                  ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: l10n.addFeedingTooltip,
+                onPressed: () => context.push('/feeding/${widget.babyId}/add'),
+              ),
+            ],
+          ),
+          _buildFilterSection(),
+          Expanded(
+            child: Consumer<FeedingState>(
+              builder: (context, feedingState, child) {
+                if (feedingState.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (feedingState.errorMessage != null &&
+                    feedingState.records.isEmpty) {
+                  return _buildErrorState(feedingState.errorMessage!);
+                }
+
+                if (feedingState.records.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return RefreshIndicator(
+                  onRefresh: _loadRecords,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    cacheExtent: _listCacheExtent,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                    itemCount: feedingState.records.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == feedingState.records.length) {
+                        return _buildListFooter(feedingState);
+                      }
+
+                      final record = feedingState.records[index];
+                      return FeedingRecordCard(
+                        record: record,
+                        onTap: () => context.push(
+                          '/feeding/${widget.babyId}/${record.id}',
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (widget.embeddedInShell) {
+      return ColoredBox(color: AppColors.background, child: content);
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppBarWidget(
-              title: l10n.feedingListTitle,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _handleBackNavigation,
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  tooltip: l10n.addFeedingTooltip,
-                  onPressed: () =>
-                      context.push('/feeding/${widget.babyId}/add'),
-                ),
-              ],
-            ),
-            _buildFilterSection(),
-            Expanded(
-              child: Consumer<FeedingState>(
-                builder: (context, feedingState, child) {
-                  if (feedingState.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (feedingState.errorMessage != null &&
-                      feedingState.records.isEmpty) {
-                    return _buildErrorState(feedingState.errorMessage!);
-                  }
-
-                  if (feedingState.records.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: _loadRecords,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      cacheExtent: _listCacheExtent,
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-                      itemCount: feedingState.records.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == feedingState.records.length) {
-                          return _buildListFooter(feedingState);
-                        }
-
-                        final record = feedingState.records[index];
-                        return FeedingRecordCard(
-                          record: record,
-                          onTap: () => context.push(
-                            '/feeding/${widget.babyId}/${record.id}',
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: content,
     );
   }
 
@@ -207,6 +220,9 @@ class _FeedingListScreenState extends State<FeedingListScreen> {
           Row(
             children: [
               OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(_inlineButtonMinWidth, 48),
+                ),
                 onPressed: _selectDateRange,
                 icon: const Icon(Icons.date_range),
                 label: Text(_dateRangeLabel()),

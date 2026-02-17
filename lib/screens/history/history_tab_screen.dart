@@ -67,16 +67,16 @@ class _HistoryTabScreenState extends State<HistoryTabScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      return const ColoredBox(
+        color: AppColors.background,
+        child: SafeArea(child: Center(child: CircularProgressIndicator())),
       );
     }
 
     if (_errorMessage != null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
+      return ColoredBox(
+        color: AppColors.background,
+        child: SafeArea(
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -117,9 +117,9 @@ class _HistoryTabScreenState extends State<HistoryTabScreen> {
     }
 
     if (_resolvedBabyId == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
+      return ColoredBox(
+        color: AppColors.background,
+        child: SafeArea(
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -160,6 +160,9 @@ class _HistoryTabScreenState extends State<HistoryTabScreen> {
       );
     }
 
-    return FeedingListScreen(babyId: _resolvedBabyId!);
+    return FeedingListScreen(
+      babyId: _resolvedBabyId!,
+      embeddedInShell: true,
+    );
   }
 }
