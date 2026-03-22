@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../l10n/app_localizations.dart';
+// import '../../l10n/app_localizations.dart';
 import '../../l10n/l10n.dart';
-import '../../services/permission_service.dart';
+// import '../../services/permission_service.dart';
 import '../../services/settings_service.dart';
 import '../../states/auth_state.dart';
-import '../../states/locale_state.dart';
-import '../../states/theme_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
@@ -23,14 +22,19 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static const String _privacyPolicyUrl =
+      'https://coherent-sky-363.notion.site/312211c598b180a7a9cdcc1edd11d677';
+  static const String _termsOfServiceUrl =
+      'https://coherent-sky-363.notion.site/312211c598b180969243fd5f24f53214';
+
   final SettingsService _settingsService = SettingsService();
-  final PermissionService _permissionService = PermissionService();
+  // final PermissionService _permissionService = PermissionService();
 
   bool _isLoading = true;
-  bool _notificationsEnabled = true;
+  // bool _notificationsEnabled = true;
   String _appVersionLabel = '-';
-  PermissionStatus _notificationPermissionStatus = PermissionStatus.denied;
-  PermissionStatus _photoPermissionStatus = PermissionStatus.denied;
+  // PermissionStatus _notificationPermissionStatus = PermissionStatus.denied;
+  // PermissionStatus _photoPermissionStatus = PermissionStatus.denied;
 
   @override
   void initState() {
@@ -39,26 +43,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _initialize() async {
-    final notificationsEnabled = await _settingsService
-        .getNotificationsEnabled();
+    // final notificationsEnabled = await _settingsService
+    //     .getNotificationsEnabled();
     final appVersionLabel = await _settingsService.getAppVersionLabel();
-    final notificationStatus = await _permissionService
-        .getNotificationPermissionStatus();
-    final photoStatus = await _permissionService.getPhotoPermissionStatus();
+    // final notificationStatus = await _permissionService
+    // .getNotificationPermissionStatus();
+    // final photoStatus = await _permissionService.getPhotoPermissionStatus();
 
     if (!mounted) {
       return;
     }
 
     setState(() {
-      _notificationsEnabled = notificationsEnabled;
+      // _notificationsEnabled = notificationsEnabled;
       _appVersionLabel = appVersionLabel;
-      _notificationPermissionStatus = notificationStatus;
-      _photoPermissionStatus = photoStatus;
+      // _notificationPermissionStatus = notificationStatus;
+      // _photoPermissionStatus = photoStatus;
       _isLoading = false;
     });
   }
 
+  /*
   Future<void> _toggleNotifications(bool enabled) async {
     await _settingsService.setNotificationsEnabled(enabled);
     if (!mounted) {
@@ -68,38 +73,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _notificationsEnabled = enabled;
     });
   }
+  */
 
-  Future<void> _requestAllPermissions() async {
-    final result = await _permissionService.requestEssentialPermissions();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _notificationPermissionStatus =
-          result[AppPermissionType.notifications] ??
-          _notificationPermissionStatus;
-      _photoPermissionStatus =
-          result[AppPermissionType.photos] ?? _photoPermissionStatus;
-    });
-  }
+  // Future<void> _requestAllPermissions() async {
+  //   final result = await _permissionService.requestEssentialPermissions();
+  //   if (!mounted) {
+  //     return;
+  //   }
+  //   setState(() {
+  //     _notificationPermissionStatus =
+  //         result[AppPermissionType.notifications] ??
+  //         _notificationPermissionStatus;
+  //     _photoPermissionStatus =
+  //         result[AppPermissionType.photos] ?? _photoPermissionStatus;
+  //   });
+  // }
 
-  Future<void> _requestSinglePermission(
-    AppPermissionType permissionType,
-  ) async {
-    final status = permissionType == AppPermissionType.notifications
-        ? await _permissionService.requestNotificationPermission()
-        : await _permissionService.requestPhotoPermission();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      if (permissionType == AppPermissionType.notifications) {
-        _notificationPermissionStatus = status;
-      } else {
-        _photoPermissionStatus = status;
-      }
-    });
-  }
+  // Future<void> _requestSinglePermission(
+  //   AppPermissionType permissionType,
+  // ) async {
+  //   final status = permissionType == AppPermissionType.notifications
+  //       ? await _permissionService.requestNotificationPermission()
+  //       : await _permissionService.requestPhotoPermission();
+  //   if (!mounted) {
+  //     return;
+  //   }
+  //   setState(() {
+  //     if (permissionType == AppPermissionType.notifications) {
+  //       _notificationPermissionStatus = status;
+  //     } else {
+  //       _photoPermissionStatus = status;
+  //     }
+  //   });
+  // }
 
   Future<void> _confirmAndLogout() async {
     final l10n = context.l10n;
@@ -133,11 +139,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
     context.go('/splash');
   }
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('페이지를 열 수 없습니다.')),
+        );
+      }
+    }
+  }
+
+  /// 계정 삭제 - 2단계 확인 후 영구 삭제 실행
+  Future<void> _confirmAndDeleteAccount() async {
+    // 1단계: 삭제 결과 안내 + 진행 의사 확인
+    final proceedToFinalConfirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('계정 삭제'),
+        content: const Text(
+          '계정을 삭제하면 모든 아이 기록, AI 대화 내역 등 데이터가 영구적으로 삭제됩니다.\n\n정말 삭제하시겠습니까?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('계속'),
+          ),
+        ],
+      ),
+    );
+
+    if (proceedToFinalConfirm != true || !mounted) return;
+
+    // 2단계: 복구 불가 최종 경고 확인
+    final confirmedDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 22),
+            const SizedBox(width: 8),
+            const Text('최종 확인'),
+          ],
+        ),
+        content: const Text(
+          '삭제된 계정과 데이터는 복구할 수 없습니다.\n정말로 계정을 영구 삭제하시겠습니까?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('영구 삭제'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmedDelete != true || !mounted) return;
+
+    final authState = context.read<AuthState>();
+    final success = await authState.deleteAccount();
+
+    if (!mounted) return;
+
+    if (success) {
+      context.go('/splash');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authState.errorMessage ?? '계정 삭제에 실패했습니다. 다시 시도해주세요.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final themeState = context.watch<ThemeState>();
-    final localeState = context.watch<LocaleState>();
 
     if (_isLoading) {
       return Scaffold(
@@ -174,6 +262,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
+                  // TODO(seungbum): 언어/테마 설정은 추후 보완 후 재활성화 예정.
+                  /*
                   _SectionHeader(title: l10n.languageSectionTitle),
                   _SettingsCard(
                     children: [
@@ -239,6 +329,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
+                  */
+                  // TODO(seungbum): 알림 설정은 추후 보완 후 재활성화 예정.
+                  /*
                   _SectionHeader(title: l10n.notificationsSectionTitle),
                   _SettingsCard(
                     children: [
@@ -255,47 +348,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: AppDimensions.xl),
-                  _SectionHeader(title: l10n.permissionsSectionTitle),
-                  _SettingsCard(
-                    children: [
-                      _PermissionTile(
-                        icon: Icons.notifications_active_outlined,
-                        title: l10n.notificationPermissionTitle,
-                        status: _notificationPermissionStatus,
-                        statusLabel: _statusLabel(
-                          _notificationPermissionStatus,
-                          l10n,
-                        ),
-                        onActionTap: () => _handlePermissionAction(
-                          AppPermissionType.notifications,
-                          _notificationPermissionStatus,
-                        ),
-                        actionLabel: _actionLabel(
-                          _notificationPermissionStatus,
-                          l10n,
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      _PermissionTile(
-                        icon: Icons.photo_library_outlined,
-                        title: l10n.photoPermissionTitle,
-                        status: _photoPermissionStatus,
-                        statusLabel: _statusLabel(_photoPermissionStatus, l10n),
-                        onActionTap: () => _handlePermissionAction(
-                          AppPermissionType.photos,
-                          _photoPermissionStatus,
-                        ),
-                        actionLabel: _actionLabel(_photoPermissionStatus, l10n),
-                      ),
-                      const Divider(height: 1),
-                      _SettingsTile(
-                        icon: Icons.refresh_outlined,
-                        title: l10n.permissionRequestAll,
-                        onTap: _requestAllPermissions,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.xl),
+                  */
+                  // _SectionHeader(title: l10n.permissionsSectionTitle),
+                  // _SettingsCard(
+                  //   children: [
+                  //     _PermissionTile(
+                  //       icon: Icons.notifications_active_outlined,
+                  //       title: l10n.notificationPermissionTitle,
+                  //       status: _notificationPermissionStatus,
+                  //       statusLabel: _statusLabel(
+                  //         _notificationPermissionStatus,
+                  //         l10n,
+                  //       ),
+                  //       onActionTap: () => _handlePermissionAction(
+                  //         AppPermissionType.notifications,
+                  //         _notificationPermissionStatus,
+                  //       ),
+                  //       actionLabel: _actionLabel(
+                  //         _notificationPermissionStatus,
+                  //         l10n,
+                  //       ),
+                  //     ),
+                  //     const Divider(height: 1),
+                  //     _PermissionTile(
+                  //       icon: Icons.photo_library_outlined,
+                  //       title: l10n.photoPermissionTitle,
+                  //       status: _photoPermissionStatus,
+                  //       statusLabel: _statusLabel(_photoPermissionStatus, l10n),
+                  //       onActionTap: () => _handlePermissionAction(
+                  //         AppPermissionType.photos,
+                  //         _photoPermissionStatus,
+                  //       ),
+                  //       actionLabel: _actionLabel(_photoPermissionStatus, l10n),
+                  //     ),
+                  //     const Divider(height: 1),
+                  //     _SettingsTile(
+                  //       icon: Icons.refresh_outlined,
+                  //       title: l10n.permissionRequestAll,
+                  //       onTap: _requestAllPermissions,
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: AppDimensions.xl),
                   _SectionHeader(title: l10n.appInfoSectionTitle),
                   _SettingsCard(
                     children: [
@@ -303,6 +397,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.info_outline,
                         title: l10n.appVersionTitle,
                         subtitle: _appVersionLabel,
+                      ),
+                      const Divider(height: 1),
+                      _SettingsTile(
+                        icon: Icons.privacy_tip_outlined,
+                        title: '개인정보 처리방침',
+                        onTap: () => _launchUrl(_privacyPolicyUrl),
+                      ),
+                      const Divider(height: 1),
+                      _SettingsTile(
+                        icon: Icons.description_outlined,
+                        title: '이용약관',
+                        onTap: () => _launchUrl(_termsOfServiceUrl),
                       ),
                     ],
                   ),
@@ -316,6 +422,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         titleColor: AppColors.error,
                         onTap: _confirmAndLogout,
                       ),
+                      const Divider(height: 1),
+                      _SettingsTile(
+                        icon: Icons.delete_forever_outlined,
+                        title: '계정 삭제',
+                        subtitle: '모든 데이터가 영구적으로 삭제됩니다',
+                        titleColor: AppColors.error,
+                        onTap: _confirmAndDeleteAccount,
+                      ),
                     ],
                   ),
                 ],
@@ -327,6 +441,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /*
   String _statusLabel(PermissionStatus status, AppLocalizations l10n) {
     switch (status) {
       case PermissionStatus.granted:
@@ -350,17 +465,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     return l10n.permissionActionRequest;
   }
+  */
 
-  Future<void> _handlePermissionAction(
-    AppPermissionType permissionType,
-    PermissionStatus status,
-  ) async {
-    if (status == PermissionStatus.permanentlyDenied) {
-      await _permissionService.openSystemSettings();
-      return;
-    }
-    await _requestSinglePermission(permissionType);
-  }
+  // Future<void> _handlePermissionAction(
+  //   AppPermissionType permissionType,
+  //   PermissionStatus status,
+  // ) async {
+  //   if (status == PermissionStatus.permanentlyDenied) {
+  //     await _permissionService.openSystemSettings();
+  //     return;
+  //   }
+  //   await _requestSinglePermission(permissionType);
+  // }
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -476,44 +592,9 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _ThemeModeTile extends StatelessWidget {
-  final ThemeMode mode;
-  final ThemeMode selectedMode;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
+// TODO(seungbum): 테마 설정 UI 재활성화 시 _ThemeModeTile 복구.
 
-  const _ThemeModeTile({
-    required this.mode,
-    required this.selectedMode,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _SettingsTile(
-      icon: mode == ThemeMode.system
-          ? Icons.settings_suggest_outlined
-          : mode == ThemeMode.light
-          ? Icons.light_mode_outlined
-          : Icons.dark_mode_outlined,
-      title: title,
-      subtitle: subtitle,
-      trailing: Icon(
-        selectedMode == mode
-            ? Icons.check_circle
-            : Icons.radio_button_unchecked,
-        color: selectedMode == mode
-            ? AppColors.primary
-            : AppColors.textTertiary,
-      ),
-      onTap: onTap,
-    );
-  }
-}
-
+/*
 class _PermissionTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -552,3 +633,4 @@ class _PermissionTile extends StatelessWidget {
     );
   }
 }
+*/

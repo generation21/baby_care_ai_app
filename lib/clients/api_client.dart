@@ -139,6 +139,15 @@ class ApiClient {
     );
   }
 
+  /// 계정 영구 삭제
+  /// DELETE /api/v1/users/{user_id}
+  ///
+  /// 성공 시 204 No Content 반환. 백엔드가 Supabase Auth 계정 및
+  /// 연관 디바이스 데이터를 모두 삭제한다.
+  Future<void> deleteAccount(String userId) async {
+    await _dio.delete('/api/v1/users/$userId');
+  }
+
   /// API 에러 처리
   static String handleApiError(DioException e) {
     if (e.response != null) {

@@ -125,6 +125,43 @@ class AuthState extends ChangeNotifier {
     }
   }
 
+  /// 계정 영구 삭제
+  ///
+  /// 백엔드에서 Supabase Auth 계정 및 연관 데이터를 모두 제거한 뒤,
+  /// 로컬 세션도 초기화한다.
+  /// 성공하면 true, 실패하면 false를 반환하고 [errorMessage]를 설정한다.
+  Future<bool> deleteAccount() async {
+    final currentUserId = userId;
+    if (currentUserId == null) {
+      _setError('사용자 정보를 확인할 수 없습니다.');
+      notifyListeners();
+      return false;
+    }
+
+    _setLoading(true);
+    _clearError();
+    notifyListeners();
+
+    try {
+      await _apiClient.deleteAccount(currentUserId);
+      // 백엔드가 Supabase Auth 계정을 삭제하므로 로컬 세션만 초기화
+      await _authService.signOut();
+      _setLoading(false);
+      notifyListeners();
+      return true;
+    } on AppAuthException catch (e) {
+      _setError(e.message);
+      _setLoading(false);
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _setError('계정 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      _setLoading(false);
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> refreshToken() async {
     try {
       await _authService.refreshToken();

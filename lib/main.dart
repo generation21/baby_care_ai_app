@@ -13,6 +13,7 @@ import 'l10n/app_localizations.dart';
 import 'services/baby_api_service.dart';
 import 'services/feeding_api_service.dart';
 import 'services/care_api_service.dart';
+import 'services/chat_api_service.dart';
 import 'services/gpt_api_service.dart';
 import 'services/dashboard_api_service.dart';
 import 'services/logging_service.dart';
@@ -21,6 +22,7 @@ import 'states/baby_state.dart';
 import 'states/dashboard_state.dart';
 import 'states/feeding_state.dart';
 import 'states/care_state.dart';
+import 'states/chat_state.dart';
 import 'states/gpt_state.dart';
 import 'states/locale_state.dart';
 import 'states/timer_state.dart';
@@ -124,6 +126,9 @@ class _BabyCareAppState extends State<BabyCareApp> {
         ProxyProvider<ApiClient, GPTApiService>(
           update: (_, apiClient, __) => GPTApiService(apiClient),
         ),
+        ProxyProvider<ApiClient, ChatApiService>(
+          update: (_, apiClient, __) => ChatApiService(apiClient),
+        ),
         ProxyProvider<ApiClient, DashboardApiService>(
           update: (_, apiClient, __) => DashboardApiService(apiClient),
         ),
@@ -152,6 +157,11 @@ class _BabyCareAppState extends State<BabyCareApp> {
         ChangeNotifierProxyProvider<GPTApiService, GPTState>(
           create: (context) => GPTState(context.read<GPTApiService>()),
           update: (_, apiService, previous) => previous ?? GPTState(apiService),
+        ),
+        ChangeNotifierProxyProvider<ChatApiService, ChatState>(
+          create: (context) => ChatState(context.read<ChatApiService>()),
+          update: (_, apiService, previous) =>
+              previous ?? ChatState(apiService),
         ),
         ChangeNotifierProxyProvider<DashboardApiService, TimerState>(
           create: (context) => TimerState(context.read<DashboardApiService>()),

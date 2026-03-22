@@ -15,9 +15,10 @@ import '../screens/feeding/edit_feeding_screen.dart';
 import '../screens/feeding/feeding_detail_screen.dart';
 import '../screens/feeding/feeding_list_screen.dart';
 import '../screens/feeding/feeding_timer_screen.dart';
+import '../screens/chat/chat_screen.dart';
+import '../screens/chat/chat_session_list_screen.dart';
 import '../screens/gpt/gpt_conversation_detail_screen.dart';
 import '../screens/gpt/gpt_conversation_list_screen.dart';
-import '../screens/gpt/gpt_question_screen.dart';
 import '../screens/history/history_tab_screen.dart';
 import '../screens/settings/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
@@ -110,11 +111,11 @@ class AppRouter {
               name: 'history',
               builder: (context, state) => const HistoryTabScreen(),
             ),
-            // AI 채팅 탭
+            // AI 채팅 탭 (멀티턴)
             GoRoute(
               path: _aiChatPath,
               name: 'ai-chat',
-              builder: (context, state) => const GPTQuestionScreen(),
+              builder: (context, state) => const ChatScreen(),
             ),
             // 설정 탭
             GoRoute(
@@ -173,7 +174,27 @@ class AppRouter {
           builder: (context, state) => const AddBabyScreen(),
         ),
 
-        // GPT 대화 목록
+        // 채팅 세션 목록
+        GoRoute(
+          path: '/chat/:babyId/sessions',
+          name: 'chat-session-list',
+          builder: (context, state) {
+            final babyId = int.parse(state.pathParameters['babyId']!);
+            return ChatSessionListScreen(babyId: babyId);
+          },
+        ),
+
+        // 채팅 세션 상세 (기존 대화 이어가기)
+        GoRoute(
+          path: '/chat/:babyId/sessions/:sessionId',
+          name: 'chat-session-detail',
+          builder: (context, state) {
+            final sessionId = int.parse(state.pathParameters['sessionId']!);
+            return ChatScreen(sessionId: sessionId);
+          },
+        ),
+
+        // GPT 대화 목록 (레거시)
         GoRoute(
           path: '/gpt/:babyId/conversations',
           name: 'gpt-conversation-list',
@@ -183,7 +204,7 @@ class AppRouter {
           },
         ),
 
-        // GPT 대화 상세
+        // GPT 대화 상세 (레거시)
         GoRoute(
           path: '/gpt/:babyId/conversations/:conversationId',
           name: 'gpt-conversation-detail',
