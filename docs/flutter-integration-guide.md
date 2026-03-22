@@ -432,7 +432,125 @@ class CareRecord {
 }
 ```
 
-### GPTConversation 모델
+### ChatSession & ChatMessage 모델 (멀티턴 대화)
+
+```dart
+// lib/models/chat_session.dart
+
+import 'package:json_annotation/json_annotation.dart';
+import 'chat_message.dart';
+
+part 'chat_session.g.dart';
+
+@JsonSerializable()
+class ChatSession {
+  final int id;
+  @JsonKey(name: 'baby_id')
+  final int babyId;
+  @JsonKey(name: 'user_id')
+  final String userId;
+  final String? title;
+  @JsonKey(name: 'created_at')
+  final String createdAt;
+  @JsonKey(name: 'updated_at')
+  final String updatedAt;
+
+  ChatSession({
+    required this.id,
+    required this.babyId,
+    required this.userId,
+    this.title,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory ChatSession.fromJson(Map<String, dynamic> json) =>
+      _$ChatSessionFromJson(json);
+  Map<String, dynamic> toJson() => _$ChatSessionToJson(this);
+}
+
+@JsonSerializable()
+class ChatSessionDetail {
+  final int id;
+  @JsonKey(name: 'baby_id')
+  final int babyId;
+  @JsonKey(name: 'user_id')
+  final String userId;
+  final String? title;
+  final List<ChatMessage> messages;
+  @JsonKey(name: 'created_at')
+  final String createdAt;
+  @JsonKey(name: 'updated_at')
+  final String updatedAt;
+
+  ChatSessionDetail({
+    required this.id,
+    required this.babyId,
+    required this.userId,
+    this.title,
+    required this.messages,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory ChatSessionDetail.fromJson(Map<String, dynamic> json) =>
+      _$ChatSessionDetailFromJson(json);
+  Map<String, dynamic> toJson() => _$ChatSessionDetailToJson(this);
+}
+```
+
+```dart
+// lib/models/chat_message.dart
+
+import 'package:json_annotation/json_annotation.dart';
+
+part 'chat_message.g.dart';
+
+@JsonSerializable()
+class ChatMessage {
+  final int id;
+  @JsonKey(name: 'session_id')
+  final int sessionId;
+  final String role; // "user" or "assistant"
+  final String content;
+  @JsonKey(name: 'created_at')
+  final String createdAt;
+
+  ChatMessage({
+    required this.id,
+    required this.sessionId,
+    required this.role,
+    required this.content,
+    required this.createdAt,
+  });
+
+  bool get isUser => role == 'user';
+  bool get isAssistant => role == 'assistant';
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) =>
+      _$ChatMessageFromJson(json);
+  Map<String, dynamic> toJson() => _$ChatMessageToJson(this);
+}
+
+@JsonSerializable()
+class SendMessageResponse {
+  @JsonKey(name: 'user_message')
+  final ChatMessage userMessage;
+  @JsonKey(name: 'assistant_message')
+  final ChatMessage assistantMessage;
+
+  SendMessageResponse({
+    required this.userMessage,
+    required this.assistantMessage,
+  });
+
+  factory SendMessageResponse.fromJson(Map<String, dynamic> json) =>
+      _$SendMessageResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$SendMessageResponseToJson(this);
+}
+```
+
+### GPTConversation 모델 (레거시 - 단건 Q&A)
 
 ```dart
 // lib/models/gpt_conversation.dart
@@ -860,7 +978,143 @@ class FeedingApiService {
 }
 ```
 
-### GPT API Service
+### Chat API Service (멀티턴 대화)
+
+```dart
+// lib/services/chat_api_service.dart
+
+import 'package:dio/dio.dart';
+import '../models/chat_session.dart';
+import '../models/chat_message.dart';
+import 'api_client.dart';
+
+class ChatApiService {
+  final ApiClient _apiClient;
+
+  ChatApiService(this._apiClient);
+
+  /// 새 채팅 세션 열기
+  Future<ChatSession> createSession(
+    int babyId, {
+    String? title,
+    int contextDays = 7,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/baby-care-ai/babies/$babyId/chat-sessions',
+        data: {
+          if (title != null) 'title': title,
+          'context_days': contextDays,
+        },
+      );
+      return ChatSession.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// 채팅 세션 목록 조회 (최근 대화순)
+  Future<List<ChatSession>> getSessions(
+    int babyId, {
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/baby-care-ai/babies/$babyId/chat-sessions',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      return (response.data as List)
+          .map((json) => ChatSession.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// 채팅 세션 상세 조회 (메시지 포함)
+  Future<ChatSessionDetail> getSessionDetail(
+    int babyId,
+    int sessionId,
+  ) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/baby-care-ai/babies/$babyId/chat-sessions/$sessionId',
+      );
+      return ChatSessionDetail.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// 메시지 전송 + AI 응답 받기
+  Future<SendMessageResponse> sendMessage(
+    int babyId,
+    int sessionId, {
+    required String message,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/baby-care-ai/babies/$babyId/chat-sessions/$sessionId/messages',
+        data: {'message': message},
+      );
+      return SendMessageResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// 메시지 목록 조회 (시간순)
+  Future<List<ChatMessage>> getMessages(
+    int babyId,
+    int sessionId, {
+    int limit = 200,
+    int offset = 0,
+  }) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/baby-care-ai/babies/$babyId/chat-sessions/$sessionId/messages',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      return (response.data as List)
+          .map((json) => ChatMessage.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// 채팅 세션 삭제
+  Future<void> deleteSession(int babyId, int sessionId) async {
+    try {
+      await _apiClient.dio.delete(
+        '/baby-care-ai/babies/$babyId/chat-sessions/$sessionId',
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  ApiException _handleError(DioException e) {
+    if (e.response != null) {
+      return ApiException(
+        statusCode: e.response!.statusCode ?? 500,
+        message: e.response!.data['error'] ?? 'Unknown error',
+        details: e.response!.data['details'],
+      );
+    } else {
+      return ApiException(
+        statusCode: 0,
+        message: 'Network error: ${e.message}',
+      );
+    }
+  }
+}
+```
+
+---
+
+### GPT API Service (레거시 - 단건 Q&A)
 
 ```dart
 // lib/services/gpt_api_service.dart
@@ -1262,6 +1516,342 @@ class _AddFeedingScreenState extends State<AddFeedingScreen> {
         ),
       ),
     );
+  }
+}
+```
+
+---
+
+### AI 채팅 화면 구현 예시
+
+```dart
+// lib/screens/chat_screen.dart
+
+class ChatScreen extends StatefulWidget {
+  final int babyId;
+  final int sessionId;
+
+  const ChatScreen({required this.babyId, required this.sessionId});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final List<ChatMessage> _messages = [];
+  bool _isLoading = false;
+  bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    setState(() => _isLoading = true);
+    try {
+      final chatService = context.read<ChatApiService>();
+      final detail = await chatService.getSessionDetail(
+        widget.babyId,
+        widget.sessionId,
+      );
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(detail.messages);
+      });
+      _scrollToBottom();
+    } catch (e) {
+      // 에러 처리
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || _isSending) return;
+
+    _controller.clear();
+    setState(() => _isSending = true);
+
+    try {
+      final chatService = context.read<ChatApiService>();
+      final response = await chatService.sendMessage(
+        widget.babyId,
+        widget.sessionId,
+        message: text,
+      );
+
+      setState(() {
+        _messages.add(response.userMessage);
+        _messages.add(response.assistantMessage);
+      });
+      _scrollToBottom();
+    } on ApiException catch (e) {
+      if (mounted) ErrorHandler.showErrorSnackbar(context, e);
+    } finally {
+      setState(() => _isSending = false);
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('AI 상담')),
+      body: Column(
+        children: [
+          // 메시지 목록
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      return _ChatBubble(message: msg);
+                    },
+                  ),
+          ),
+
+          // 전송 중 표시
+          if (_isSending)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 8),
+                  Text('AI가 답변을 생성하고 있습니다...'),
+                ],
+              ),
+            ),
+
+          // 입력창
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: '메시지를 입력하세요...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _isSending ? null : _sendMessage,
+                    icon: const Icon(Icons.send),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatBubble extends StatelessWidget {
+  final ChatMessage message;
+
+  const _ChatBubble({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final isUser = message.isUser;
+
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        decoration: BoxDecoration(
+          color: isUser
+              ? Theme.of(context).primaryColor
+              : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          message.content,
+          style: TextStyle(
+            color: isUser ? Colors.white : Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+### 채팅 세션 목록 화면 예시
+
+```dart
+// lib/screens/chat_session_list_screen.dart
+
+class ChatSessionListScreen extends StatefulWidget {
+  final int babyId;
+
+  const ChatSessionListScreen({required this.babyId});
+
+  @override
+  State<ChatSessionListScreen> createState() => _ChatSessionListScreenState();
+}
+
+class _ChatSessionListScreenState extends State<ChatSessionListScreen> {
+  List<ChatSession> _sessions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    setState(() => _isLoading = true);
+    try {
+      final chatService = context.read<ChatApiService>();
+      _sessions = await chatService.getSessions(widget.babyId);
+    } catch (e) {
+      // 에러 처리
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _createNewSession() async {
+    try {
+      final chatService = context.read<ChatApiService>();
+      final session = await chatService.createSession(widget.babyId);
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+              babyId: widget.babyId,
+              sessionId: session.id,
+            ),
+          ),
+        ).then((_) => _loadSessions());
+      }
+    } on ApiException catch (e) {
+      if (mounted) ErrorHandler.showErrorSnackbar(context, e);
+    }
+  }
+
+  Future<void> _deleteSession(int sessionId) async {
+    try {
+      final chatService = context.read<ChatApiService>();
+      await chatService.deleteSession(widget.babyId, sessionId);
+      _loadSessions();
+    } on ApiException catch (e) {
+      if (mounted) ErrorHandler.showErrorSnackbar(context, e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('AI 상담 내역')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createNewSession,
+        child: const Icon(Icons.add),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _sessions.isEmpty
+              ? const Center(child: Text('대화 내역이 없습니다.\n새 대화를 시작해보세요!'))
+              : ListView.builder(
+                  itemCount: _sessions.length,
+                  itemBuilder: (context, index) {
+                    final session = _sessions[index];
+                    return Dismissible(
+                      key: Key('session-${session.id}'),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (_) => _deleteSession(session.id),
+                      child: ListTile(
+                        title: Text(session.title ?? '새 대화'),
+                        subtitle: Text(
+                          _formatDate(session.updatedAt),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatScreen(
+                                babyId: widget.babyId,
+                                sessionId: session.id,
+                              ),
+                            ),
+                          ).then((_) => _loadSessions());
+                        },
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  String _formatDate(String isoDate) {
+    final dt = DateTime.parse(isoDate).toLocal();
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+
+    if (diff.inMinutes < 1) return '방금 전';
+    if (diff.inHours < 1) return '${diff.inMinutes}분 전';
+    if (diff.inDays < 1) return '${diff.inHours}시간 전';
+    if (diff.inDays < 7) return '${diff.inDays}일 전';
+    return '${dt.month}/${dt.day}';
   }
 }
 ```

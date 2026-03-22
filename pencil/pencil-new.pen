@@ -1,5 +1,5 @@
 {
-  "version": "2.7",
+  "version": "2.8",
   "children": [
     {
       "type": "frame",
@@ -5455,130 +5455,320 @@
       "layout": "vertical",
       "children": [
         {
-          "id": "y9Y2l",
-          "type": "ref",
-          "ref": "6OGbl",
-          "name": "appBar",
-          "descendants": {
-            "g7eG1": {
-              "gap": 0
-            },
-            "FPu27": {
-              "enabled": false
-            },
-            "kHtp6": {
-              "content": "Baby Care"
-            }
-          }
-        },
-        {
           "type": "frame",
-          "id": "F5QyX",
-          "name": "Scroll Content",
+          "id": "k7wzG",
+          "name": "appBar",
           "width": "fill_container",
-          "layout": "vertical",
-          "gap": 24,
+          "height": 64,
+          "fill": "$surface",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border_light"
+          },
           "padding": [
             0,
-            16,
-            24,
             16
           ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
           "children": [
             {
-              "id": "eNV97",
-              "type": "ref",
-              "ref": "tu7Yc",
-              "width": "fill_container",
-              "name": "babyProfile"
+              "type": "text",
+              "id": "TM6Xg",
+              "name": "title",
+              "fill": "$text_primary",
+              "content": "Baby Care",
+              "fontFamily": "$font_primary",
+              "fontSize": 16,
+              "fontWeight": "600"
             },
             {
               "type": "frame",
-              "id": "7kqiE",
-              "name": "todaySection",
-              "width": "fill_container",
-              "layout": "vertical",
-              "gap": 12,
+              "id": "YtXds",
+              "name": "actions",
+              "gap": 8,
               "children": [
                 {
-                  "type": "text",
-                  "id": "USKug",
-                  "name": "todayTitle",
-                  "fill": "$text_primary",
-                  "content": "Today's Summary",
-                  "fontFamily": "Inter",
-                  "fontSize": 16,
-                  "fontWeight": "600"
+                  "id": "hbpgx",
+                  "type": "ref",
+                  "ref": "ufLtf",
+                  "descendants": {
+                    "3mCzS": {
+                      "iconFontName": "person_outline"
+                    }
+                  }
+                },
+                {
+                  "id": "Lo2w6",
+                  "type": "ref",
+                  "ref": "ufLtf",
+                  "descendants": {
+                    "3mCzS": {
+                      "iconFontName": "add"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "y3RXd",
+          "name": "Main Content",
+          "clip": true,
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "id": "AOTWr",
+              "type": "ref",
+              "ref": "tu7Yc",
+              "width": "fill_container",
+              "descendants": {
+                "ZwcNd": {
+                  "content": "Seungbum Jr."
+                },
+                "gUVJn": {
+                  "content": "생후 45일"
+                },
+                "kNJuZ/3mCzS": {
+                  "iconFontName": "chevron_right"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "spLnU",
+              "name": "dailySummaryCard",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 16,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$border_light"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RyxWN",
+                  "name": "dailyHeader",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "khvRc",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "today",
+                      "iconFontFamily": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CnXYo",
+                      "fill": "$text_primary",
+                      "content": "오늘의 요약",
+                      "fontFamily": "$font_primary",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    }
+                  ]
                 },
                 {
                   "type": "frame",
-                  "id": "Thuqq",
-                  "name": "statsRow",
+                  "id": "KU8s8",
+                  "name": "summaryRow1",
                   "width": "fill_container",
                   "gap": 12,
                   "children": [
                     {
-                      "id": "AbuVA",
-                      "type": "ref",
-                      "ref": "zmK30",
+                      "type": "frame",
+                      "id": "6L0w4",
+                      "name": "feedingItem",
                       "width": "fill_container",
-                      "name": "stat1",
-                      "descendants": {
-                        "HOStU": {
-                          "iconFontName": "water_drop"
+                      "fill": "$primary_50",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "zSLDv",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "YN50E",
+                              "width": 18,
+                              "height": 18,
+                              "iconFontName": "restaurant",
+                              "iconFontFamily": "Material Symbols Rounded",
+                              "fill": "$primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "xuRkf",
+                              "fill": "$text_secondary",
+                              "content": "수유",
+                              "fontFamily": "$font_primary",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
                         },
-                        "REPV0": {
-                          "content": "Feedings"
+                        {
+                          "type": "text",
+                          "id": "myHHQ",
+                          "fill": "$primary",
+                          "content": "6회",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 20,
+                          "fontWeight": "700"
                         },
-                        "PDyjo": {
-                          "content": "6"
-                        },
-                        "T2ADf": {
-                          "content": "Today"
+                        {
+                          "type": "text",
+                          "id": "qBHSw",
+                          "fill": "$primary",
+                          "content": "840ml",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
-                      }
+                      ]
                     },
                     {
-                      "id": "7gi0E",
-                      "type": "ref",
-                      "ref": "zmK30",
+                      "type": "frame",
+                      "id": "JYyv7",
+                      "name": "sleepItem",
                       "width": "fill_container",
-                      "name": "stat2",
-                      "descendants": {
-                        "HOStU": {
-                          "iconFontName": "baby_changing_station"
+                      "fill": "$surface_secondary",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kyg4Q",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "FF5im",
+                              "width": 18,
+                              "height": 18,
+                              "iconFontName": "nightlight_round",
+                              "iconFontFamily": "Material Symbols Rounded",
+                              "fill": "$info"
+                            },
+                            {
+                              "type": "text",
+                              "id": "cWjRr",
+                              "fill": "$text_secondary",
+                              "content": "수면",
+                              "fontFamily": "$font_primary",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
                         },
-                        "REPV0": {
-                          "content": "Diapers"
+                        {
+                          "type": "text",
+                          "id": "Mahh5",
+                          "fill": "$info",
+                          "content": "4시간",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 20,
+                          "fontWeight": "700"
                         },
-                        "PDyjo": {
-                          "content": "4"
-                        },
-                        "T2ADf": {
-                          "content": "Today"
+                        {
+                          "type": "text",
+                          "id": "dWm9K",
+                          "fill": "$info",
+                          "content": "30분",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
-                      }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "pT129",
+                  "name": "summaryRow2",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HjwZG",
+                      "name": "diaperItem",
+                      "width": "fill_container",
+                      "fill": "$accent_50",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QUhtb",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "nDxug",
+                              "width": 18,
+                              "height": 18,
+                              "iconFontName": "child_care",
+                              "iconFontFamily": "Material Symbols Rounded",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "cKj7u",
+                              "fill": "$text_secondary",
+                              "content": "기저귀",
+                              "fontFamily": "$font_primary",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "2Gy6z",
+                          "fill": "$accent",
+                          "content": "4회",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        }
+                      ]
                     },
                     {
-                      "id": "CuYF1",
-                      "type": "ref",
-                      "ref": "RLSi2",
+                      "type": "frame",
+                      "id": "1rzaz",
+                      "name": "summarySpacer",
                       "width": "fill_container",
-                      "name": "stat3",
-                      "descendants": {
-                        "QMtSN": {
-                          "iconFontName": "bedtime"
-                        },
-                        "n5Rtk": {
-                          "content": "Sleep"
-                        },
-                        "EnB2S": {
-                          "content": "4h 30m"
-                        },
-                        "Kni0m": {
-                          "content": "Total today"
-                        }
-                      }
+                      "height": "fit_content(0)"
                     }
                   ]
                 }
@@ -5586,35 +5776,35 @@
             },
             {
               "type": "frame",
-              "id": "DT9nH",
-              "name": "qaSection",
+              "id": "uyhKX",
+              "name": "quickActionSection",
               "width": "fill_container",
               "layout": "vertical",
               "gap": 12,
               "children": [
                 {
                   "type": "text",
-                  "id": "mG9fy",
-                  "name": "qaTitle",
+                  "id": "79dgc",
+                  "name": "quickTitle",
                   "fill": "$text_primary",
                   "content": "Quick Actions",
                   "fontFamily": "Inter",
-                  "fontSize": 16,
-                  "fontWeight": "600"
+                  "fontSize": 20,
+                  "fontWeight": "700"
                 },
                 {
                   "type": "frame",
-                  "id": "7JHuv",
-                  "name": "qaGrid",
+                  "id": "GLsus",
+                  "name": "quickRow",
                   "width": "fill_container",
                   "gap": 12,
                   "justifyContent": "space_between",
                   "children": [
                     {
-                      "id": "VAmsx",
+                      "id": "s6p4u",
                       "type": "ref",
                       "ref": "51Pus",
-                      "name": "qa1",
+                      "name": "quick1",
                       "descendants": {
                         "D7sVD": {
                           "iconFontName": "water_drop"
@@ -5625,14 +5815,14 @@
                       }
                     },
                     {
-                      "id": "cDmsT",
+                      "id": "yC0aq",
                       "type": "ref",
                       "ref": "51Pus",
-                      "fill": "#7E57C2",
-                      "name": "qa2",
+                      "name": "quick2",
+                      "fill": "#000000",
                       "descendants": {
                         "D7sVD": {
-                          "iconFontName": "restaurant"
+                          "iconFontName": "local_drink"
                         },
                         "HNe8t": {
                           "content": "Formula"
@@ -5640,14 +5830,14 @@
                       }
                     },
                     {
-                      "id": "KfghQ",
+                      "id": "RLN9q",
                       "type": "ref",
                       "ref": "51Pus",
+                      "name": "quick3",
                       "fill": "$accent",
-                      "name": "qa3",
                       "descendants": {
                         "D7sVD": {
-                          "iconFontName": "baby_changing_station"
+                          "iconFontName": "child_care"
                         },
                         "HNe8t": {
                           "content": "Diaper"
@@ -5655,11 +5845,11 @@
                       }
                     },
                     {
-                      "id": "4Ajml",
+                      "id": "Qz0iV",
                       "type": "ref",
                       "ref": "51Pus",
+                      "name": "quick4",
                       "fill": "$success",
-                      "name": "qa4",
                       "descendants": {
                         "D7sVD": {
                           "iconFontName": "bedtime"
@@ -5675,102 +5865,227 @@
             },
             {
               "type": "frame",
-              "id": "Z8OMv",
-              "name": "timerSection",
+              "id": "NvHay",
+              "name": "activitySection",
               "width": "fill_container",
               "layout": "vertical",
               "gap": 12,
               "children": [
                 {
                   "type": "text",
-                  "id": "mG0ZS",
-                  "name": "timerTitle",
+                  "id": "Qh0ZQ",
                   "fill": "$text_primary",
-                  "content": "Active Timer",
-                  "fontFamily": "Inter",
-                  "fontSize": 16,
-                  "fontWeight": "600"
+                  "content": "진행 중인 활동",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 20,
+                  "fontWeight": "700"
                 },
                 {
-                  "id": "qHtwJ",
-                  "type": "ref",
-                  "ref": "8AHqV",
+                  "type": "frame",
+                  "id": "nfdMZ",
+                  "name": "emptyFeedingTimer",
                   "width": "fill_container",
-                  "name": "activeTimer"
+                  "fill": "$surface_secondary",
+                  "cornerRadius": 16,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border_light"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "zxUDL",
+                      "width": 48,
+                      "height": 48,
+                      "iconFontName": "timer_off",
+                      "iconFontFamily": "Material Symbols Rounded",
+                      "fill": "$text_tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LWaAT",
+                      "fill": "$text_secondary",
+                      "content": "진행 중인 수유가 없습니다",
+                      "fontFamily": "$font_primary",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "PdPr6",
+                      "type": "ref",
+                      "ref": "Pjyc1",
+                      "descendants": {
+                        "Q0gJh": {
+                          "iconFontName": "timer"
+                        },
+                        "Cbq6K": {
+                          "content": "타이머 시작"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YrY0Z",
+                  "name": "sleepStatusCard",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 16,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border_light"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "myz8O",
+                      "fill": "$text_primary",
+                      "content": "수면 상태",
+                      "fontFamily": "$font_primary",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "N4O6K",
+                      "fill": "$text_secondary",
+                      "content": "현재 진행 중인 수면이 없습니다",
+                      "fontFamily": "$font_primary",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HcQmw",
+                      "name": "sleepButton",
+                      "width": "fill_container",
+                      "cornerRadius": 8,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "gap": 8,
+                      "padding": [
+                        10,
+                        16
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "DIa0z",
+                          "width": 18,
+                          "height": 18,
+                          "iconFontName": "play_arrow",
+                          "iconFontFamily": "Material Symbols Rounded",
+                          "fill": "$text_primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xIPPe",
+                          "fill": "$text_primary",
+                          "content": "수면 시작하기",
+                          "fontFamily": "$font_primary",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
             {
               "type": "frame",
-              "id": "10aUr",
-              "name": "historySection",
+              "id": "vtSpS",
+              "name": "recordsSection",
               "width": "fill_container",
               "layout": "vertical",
               "gap": 12,
               "children": [
                 {
                   "type": "text",
-                  "id": "o5fL7",
-                  "name": "historyTitle",
+                  "id": "OFLQf",
                   "fill": "$text_primary",
-                  "content": "Recent History",
-                  "fontFamily": "Inter",
-                  "fontSize": 16,
-                  "fontWeight": "600"
+                  "content": "최근 기록",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 20,
+                  "fontWeight": "700"
                 },
                 {
                   "type": "frame",
-                  "id": "srOKr",
-                  "name": "historyList",
+                  "id": "zs8N9",
+                  "name": "recordsCard",
                   "clip": true,
                   "width": "fill_container",
                   "fill": "$surface",
-                  "cornerRadius": 12,
+                  "cornerRadius": 16,
                   "stroke": {
                     "thickness": 1,
-                    "fill": "$border"
+                    "fill": "$border_light"
                   },
                   "layout": "vertical",
                   "children": [
                     {
-                      "id": "D3NIH",
+                      "id": "Eh2jl",
                       "type": "ref",
                       "ref": "fBAqD",
                       "width": "fill_container",
-                      "name": "rec1"
-                    },
-                    {
-                      "id": "faqpk",
-                      "type": "ref",
-                      "ref": "d6zZ0",
-                      "width": "fill_container",
-                      "name": "rec2"
-                    },
-                    {
-                      "id": "JArsa",
-                      "type": "ref",
-                      "ref": "fBAqD",
-                      "width": "fill_container",
-                      "name": "rec3",
                       "descendants": {
                         "2bKcB": {
-                          "fill": "#F3E5F5"
+                          "fill": "$primary_50"
                         },
                         "1jNrj": {
                           "iconFontName": "restaurant",
-                          "fill": "#7E57C2"
+                          "fill": "$primary"
                         },
                         "2F3VT": {
-                          "content": "Formula feeding"
+                          "content": "모유 수유"
                         },
                         "MdqlR": {
-                          "content": "150ml · 20 min"
+                          "content": "120ml • 왼쪽 • 15분"
                         },
                         "cQd6j": {
-                          "content": "10:15"
+                          "content": "14:30"
                         },
                         "KCGGN": {
-                          "content": "2h ago"
+                          "content": "4분 전"
+                        }
+                      }
+                    },
+                    {
+                      "id": "hG3G7",
+                      "type": "ref",
+                      "ref": "fBAqD",
+                      "width": "fill_container",
+                      "descendants": {
+                        "2bKcB": {
+                          "fill": "$accent_50"
+                        },
+                        "1jNrj": {
+                          "iconFontName": "child_care",
+                          "fill": "$accent"
+                        },
+                        "2F3VT": {
+                          "content": "기저귀 교체"
+                        },
+                        "MdqlR": {
+                          "content": "소변 • 보통"
+                        },
+                        "cQd6j": {
+                          "content": "13:10"
+                        },
+                        "KCGGN": {
+                          "content": "1시간 전"
                         }
                       }
                     }
@@ -5781,10 +6096,141 @@
           ]
         },
         {
-          "id": "xpg4A",
-          "type": "ref",
-          "ref": "4iBYU",
-          "name": "bottomNav"
+          "type": "frame",
+          "id": "1uKyi",
+          "name": "bottomNav",
+          "width": "fill_container",
+          "height": 68,
+          "fill": "$surface",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "$border_light"
+          },
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000000D",
+            "offset": {
+              "x": 0,
+              "y": -2
+            },
+            "blur": 8
+          },
+          "justifyContent": "space_around",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "639ke",
+              "layout": "vertical",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "h8YPS",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "home",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "qUAWF",
+                  "fill": "$primary",
+                  "content": "Home",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WodlW",
+              "layout": "vertical",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "9r8oA",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "history",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$text_tertiary"
+                },
+                {
+                  "type": "text",
+                  "id": "VQZfh",
+                  "fill": "$text_tertiary",
+                  "content": "History",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CQ763",
+              "layout": "vertical",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "Ri3AF",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "chat_bubble",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$text_tertiary"
+                },
+                {
+                  "type": "text",
+                  "id": "G02zW",
+                  "fill": "$text_tertiary",
+                  "content": "AI Chat",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ciztf",
+              "layout": "vertical",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "QuUWm",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "person",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$text_tertiary"
+                },
+                {
+                  "type": "text",
+                  "id": "Qc2W8",
+                  "fill": "$text_tertiary",
+                  "content": "Profile",
+                  "fontFamily": "$font_primary",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -6616,6 +7062,103 @@
                   "content": "등록하기"
                 }
               }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "bcAp1",
+      "x": 3400,
+      "y": 0,
+      "name": "앱 아이콘",
+      "width": 1024,
+      "height": 1024,
+      "fill": "$primary",
+      "cornerRadius": 229,
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "bcAp2",
+          "name": "권장 그리기 영역 650×650",
+          "width": 650,
+          "height": 650,
+          "fill": "$primary",
+          "stroke": {
+            "thickness": 2,
+            "fill": "#FFFFFF99"
+          },
+          "layout": "vertical",
+          "gap": 32,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "bcAp3",
+              "name": "aiStars",
+              "gap": 24,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "bcAp4",
+                  "name": "starLeft",
+                  "width": 44,
+                  "height": 44,
+                  "iconFontName": "star",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$accent"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "bcAp5",
+                  "name": "starCenter",
+                  "width": 56,
+                  "height": 56,
+                  "iconFontName": "star",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$accent"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "bcAp6",
+                  "name": "starRight",
+                  "width": 44,
+                  "height": 44,
+                  "iconFontName": "star",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$accent"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bcAp7",
+              "name": "babyMark",
+              "width": 320,
+              "height": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 160,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "bcAp8",
+                  "name": "babySymbol",
+                  "width": 200,
+                  "height": 200,
+                  "iconFontName": "child_care",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$primary"
+                }
+              ]
             }
           ]
         }
